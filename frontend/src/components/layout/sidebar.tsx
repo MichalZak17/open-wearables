@@ -1,5 +1,7 @@
+import { useState } from 'react';
 import { Link, useLocation } from '@tanstack/react-router';
 import {
+  ChevronDown,
   ChevronsUpDown,
   ExternalLink,
   FileText,
@@ -76,6 +78,21 @@ export function Sidebar() {
   const fullName = [me?.first_name, me?.last_name].filter(Boolean).join(' ');
   const displayName = fullName || me?.email || 'Your account';
   const isSettingsActive = location.pathname.startsWith(ROUTES.settings);
+  const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(
+    () => new Set()
+  );
+
+  const toggleGroup = (label: string) => {
+    setCollapsedGroups((prev) => {
+      const next = new Set(prev);
+      if (next.has(label)) {
+        next.delete(label);
+      } else {
+        next.add(label);
+      }
+      return next;
+    });
+  };
 
   return (
     <aside className="relative flex w-64 shrink-0 flex-col border-r border-sidebar-border bg-sidebar text-sidebar-foreground">
@@ -149,53 +166,69 @@ export function Sidebar() {
         className="flex-1 overflow-y-auto px-3 py-4"
         aria-label="Main navigation"
       >
-        {navigationGroups.map((group, groupIndex) => (
-          <div
-            key={group.label}
-            className={cn(
-              groupIndex > 0 && 'mt-5 border-t border-sidebar-border pt-5'
-            )}
-          >
-            <p className="mb-2 px-3 text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground/70">
-              {group.label}
-            </p>
-            <div className="space-y-1">
-              {group.items.map((item) => {
-                const isActive = location.pathname.startsWith(item.url);
+        {navigationGroups.map((group, groupIndex) => {
+          const isCollapsed = collapsedGroups.has(group.label);
 
-                return (
-                  <Link
-                    key={item.title}
-                    to={item.url}
-                    aria-current={isActive ? 'page' : undefined}
-                    className={cn(
-                      'group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
-                      isActive
-                        ? 'bg-sidebar-accent text-sidebar-accent-foreground'
-                        : 'text-muted-foreground hover:bg-sidebar-accent/60 hover:text-sidebar-foreground'
-                    )}
-                  >
-                    <item.icon
+          return (
+            <div
+              key={group.label}
+              className={cn(
+                groupIndex > 0 && 'mt-5 border-t border-sidebar-border pt-5'
+              )}
+            >
+              <button
+                type="button"
+                onClick={() => toggleGroup(group.label)}
+                aria-expanded={!isCollapsed}
+                className="group/header mb-2 flex w-full items-center justify-between rounded-md px-3 py-1 text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground/70 outline-none transition-colors hover:text-sidebar-foreground focus-visible:ring-2 focus-visible:ring-sidebar-ring"
+              >
+                <span>{group.label}</span>
+                <ChevronDown
+                  className={cn(
+                    'size-3.5 text-muted-foreground/50 transition-transform duration-200 group-hover/header:text-sidebar-foreground',
+                    isCollapsed && '-rotate-90'
+                  )}
+                  aria-hidden="true"
+                />
+              </button>
+              <div className={cn('space-y-1', isCollapsed && 'hidden')}>
+                {group.items.map((item) => {
+                  const isActive = location.pathname.startsWith(item.url);
+
+                  return (
+                    <Link
+                      key={item.title}
+                      to={item.url}
+                      aria-current={isActive ? 'page' : undefined}
                       className={cn(
-                        'size-4 shrink-0 transition-colors',
+                        'group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
                         isActive
-                          ? 'text-sidebar-foreground'
-                          : 'text-muted-foreground group-hover:text-sidebar-foreground'
+                          ? 'bg-sidebar-accent text-sidebar-accent-foreground'
+                          : 'text-muted-foreground hover:bg-sidebar-accent/60 hover:text-sidebar-foreground'
                       )}
-                      aria-hidden="true"
-                    />
-                    <span>{item.title}</span>
-                    {'badge' in item ? (
-                      <span className="ml-auto rounded-md bg-success/10 px-1.5 py-0.5 text-[10px] font-semibold text-success ring-1 ring-inset ring-success/20">
-                        {item.badge}
-                      </span>
-                    ) : null}
-                  </Link>
-                );
-              })}
+                    >
+                      <item.icon
+                        className={cn(
+                          'size-4 shrink-0 transition-colors',
+                          isActive
+                            ? 'text-sidebar-foreground'
+                            : 'text-muted-foreground group-hover:text-sidebar-foreground'
+                        )}
+                        aria-hidden="true"
+                      />
+                      <span>{item.title}</span>
+                      {'badge' in item ? (
+                        <span className="ml-auto rounded-md bg-success/10 px-1.5 py-0.5 text-[10px] font-semibold text-success ring-1 ring-inset ring-success/20">
+                          {item.badge}
+                        </span>
+                      ) : null}
+                    </Link>
+                  );
+                })}
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </nav>
 
       <div className="space-y-1 p-3">
