@@ -11,6 +11,10 @@ import { QueryClientProvider } from '@tanstack/react-query';
 import { queryClient } from '@/lib/query/client';
 import { runtimeConfigScript } from '@/lib/api/runtime-config';
 import { Toaster } from '@/components/ui/sonner';
+import {
+  ThemeProvider,
+  themeInitializationScript,
+} from '@/components/theme-provider';
 
 import '../styles.css';
 
@@ -96,9 +100,13 @@ export const Route = createRootRoute({
 
 function RootComponent() {
   return (
-    <html lang="en" className="dark">
+    <html lang="en" className="dark" suppressHydrationWarning>
       <head>
         <HeadContent />
+        <script
+          // Apply the saved or system theme before the page paints.
+          dangerouslySetInnerHTML={{ __html: themeInitializationScript }}
+        />
         {/* Runtime config: injects the API URL from the container env before
             the app hydrates, so one prebuilt image works against any backend. */}
         <script
@@ -107,28 +115,30 @@ function RootComponent() {
         />
       </head>
       <body>
-        <QueryClientProvider client={queryClient}>
-          <Outlet />
-          <Toaster />
-          {import.meta.env.DEV && (
-            <TanStackDevtools
-              config={{
-                position: 'bottom-right',
-              }}
-              plugins={[
-                {
-                  name: 'Tanstack Router',
-                  render: <TanStackRouterDevtoolsPanel />,
-                },
-                {
-                  name: 'React Query',
-                  render: <ReactQueryDevtoolsPanel />,
-                },
-              ]}
-            />
-          )}
-          <Scripts />
-        </QueryClientProvider>
+        <ThemeProvider>
+          <QueryClientProvider client={queryClient}>
+            <Outlet />
+            <Toaster />
+            {import.meta.env.DEV && (
+              <TanStackDevtools
+                config={{
+                  position: 'bottom-right',
+                }}
+                plugins={[
+                  {
+                    name: 'Tanstack Router',
+                    render: <TanStackRouterDevtoolsPanel />,
+                  },
+                  {
+                    name: 'React Query',
+                    render: <ReactQueryDevtoolsPanel />,
+                  },
+                ]}
+              />
+            )}
+            <Scripts />
+          </QueryClientProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

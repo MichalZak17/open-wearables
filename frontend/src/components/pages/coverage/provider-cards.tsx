@@ -25,10 +25,10 @@ function StatBar({ label, value, max }: Stat) {
   return (
     <div className="space-y-1">
       <div className="flex items-center justify-between text-xs">
-        <span className="text-zinc-500">{label}</span>
-        <span className="tabular-nums text-zinc-300 font-medium">{value}</span>
+        <span className="text-muted-foreground">{label}</span>
+        <span className="font-medium tabular-nums text-foreground">{value}</span>
       </div>
-      <div className="h-1 rounded-full bg-zinc-800 overflow-hidden">
+      <div className="h-1 overflow-hidden rounded-full bg-muted">
         <div
           className="h-full rounded-full bg-emerald-500/70 transition-all duration-500"
           style={{ width: `${pct}%` }}
@@ -70,7 +70,7 @@ export function ProviderCards({ data }: Props) {
         return (
           <div
             key={p}
-            className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-4 space-y-3 hover:border-zinc-700 transition-colors"
+            className="space-y-3 rounded-xl border border-border bg-card/50 p-4 transition-colors hover:border-border-hover"
           >
             <div className="flex items-center gap-2">
               <img
@@ -81,7 +81,7 @@ export function ProviderCards({ data }: Props) {
                   (e.target as HTMLImageElement).style.display = 'none';
                 }}
               />
-              <span className="text-sm font-semibold text-zinc-100 truncate">
+              <span className="truncate text-sm font-semibold text-foreground">
                 {PROVIDER_LABELS[p] ?? p}
               </span>
             </div>

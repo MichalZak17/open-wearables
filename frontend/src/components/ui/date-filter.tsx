@@ -94,7 +94,7 @@ export function DateFilter({ onChange, className }: DateFilterProps) {
   // Borderless input that sits inside a grouped, bordered container.
   const dateInputClass =
     'h-8 border-0 bg-transparent px-2.5 text-xs font-medium tabular-nums text-foreground ' +
-    'focus:outline-none [color-scheme:dark]';
+    'focus:outline-none [color-scheme:light] dark:[color-scheme:dark]';
 
   const stepperButtonClass =
     'flex h-8 w-8 items-center justify-center text-muted-foreground transition-colors ' +
@@ -110,7 +110,7 @@ export function DateFilter({ onChange, className }: DateFilterProps) {
       >
         <span
           aria-hidden
-          className="absolute inset-y-1 rounded-md bg-white shadow-sm transition-transform duration-200 ease-out"
+          className="absolute inset-y-1 rounded-md bg-primary shadow-sm transition-transform duration-200 ease-out"
           style={{
             width: `${100 / MODES.length}%`,
             transform: `translateX(${modeIndex * 100}%)`,
@@ -128,7 +128,7 @@ export function DateFilter({ onChange, className }: DateFilterProps) {
               className={cn(
                 'relative z-10 flex flex-1 items-center justify-center whitespace-nowrap rounded-md px-3 text-xs font-medium transition-colors duration-200',
                 active
-                  ? 'text-zinc-900'
+                  ? 'text-primary-foreground'
                   : 'text-muted-foreground hover:text-foreground/70'
               )}
             >

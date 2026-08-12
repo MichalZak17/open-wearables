@@ -94,7 +94,7 @@ export function RecentUsersSection({
           <span
             aria-hidden
             className={cn(
-              'absolute inset-y-1 w-1/2 rounded-md bg-white shadow-sm transition-transform duration-200 ease-out',
+              'absolute inset-y-1 w-1/2 rounded-md bg-primary shadow-sm transition-transform duration-200 ease-out',
               tab === 'recent' ? 'translate-x-0' : 'translate-x-full'
             )}
           />
@@ -118,7 +118,7 @@ export function RecentUsersSection({
                 className={cn(
                   'relative z-10 flex flex-1 items-center justify-center gap-1.5 whitespace-nowrap rounded-md px-2 py-1.5 text-sm font-medium transition-colors duration-200',
                   active
-                    ? 'text-zinc-900'
+                    ? 'text-primary-foreground'
                     : 'text-muted-foreground hover:text-foreground/70'
                 )}
               >

@@ -79,8 +79,8 @@ function SyncsPage() {
     <div className="p-8">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-medium text-white">Syncs</h1>
-          <p className="text-sm text-zinc-500 mt-1">
+          <h1 className="text-2xl font-medium text-foreground">Syncs</h1>
+          <p className="mt-1 text-sm text-muted-foreground">
             Monitor sync activity across all users and providers.
           </p>
         </div>
@@ -98,7 +98,7 @@ function SyncsPage() {
 
       {/* Filters */}
       <div className="flex flex-wrap items-center gap-3 mb-6">
-        <Filter className="h-4 w-4 text-zinc-500" />
+        <Filter className="h-4 w-4 text-muted-foreground" />
         <Input
           placeholder="Filter by user ID..."
           value={userIdInput}
@@ -106,7 +106,7 @@ function SyncsPage() {
             setUserIdInput(e.target.value);
             setPage(0);
           }}
-          className="w-72 h-8 text-sm bg-zinc-900 border-zinc-800"
+          className="h-8 w-72 border-border bg-input text-sm"
         />
         <FilterSelect
           value={filters.provider}
@@ -147,21 +147,21 @@ function SyncsPage() {
             variant="ghost"
             size="sm"
             onClick={clearFilters}
-            className="h-8 gap-1 text-xs text-zinc-400"
+            className="h-8 gap-1 text-xs text-muted-foreground"
           >
             <X className="h-3 w-3" />
             Clear
           </Button>
         )}
         <div className="ml-auto flex items-center gap-2">
-          <span className="text-xs text-zinc-500">Per page:</span>
+          <span className="text-xs text-muted-foreground">Per page:</span>
           <select
             value={pageSize}
             onChange={(e) => {
               setPageSize(Number(e.target.value));
               setPage(0);
             }}
-            className="h-8 rounded-md border border-zinc-800 bg-zinc-900 px-3 text-xs text-zinc-300 outline-none focus:ring-1 focus:ring-zinc-600"
+            className="h-8 rounded-md border border-border bg-input px-3 text-xs text-foreground outline-none focus:ring-1 focus:ring-ring"
           >
             {PAGE_SIZE_OPTIONS.map((n) => (
               <option key={n} value={n}>
@@ -188,10 +188,10 @@ function SyncsPage() {
         </div>
       ) : (
         <>
-          <div className="rounded-lg border border-zinc-800 overflow-hidden">
+          <div className="overflow-hidden rounded-lg border border-border">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-zinc-800 bg-zinc-900/50 text-zinc-400 text-xs">
+                <tr className="border-b border-border bg-muted/50 text-xs text-muted-foreground">
                   <th className="px-4 py-2.5 text-left font-medium">User ID</th>
                   <th className="px-4 py-2.5 text-left font-medium">
                     Provider
@@ -209,7 +209,7 @@ function SyncsPage() {
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-zinc-800/50">
+              <tbody className="divide-y divide-border/50">
                 {paginatedRuns.map((run) => (
                   <SyncRow key={run.run_id} run={run} />
                 ))}
@@ -219,7 +219,7 @@ function SyncsPage() {
 
           {/* Pagination */}
           <div className="flex items-center justify-between mt-4">
-            <p className="text-xs text-zinc-500">
+            <p className="text-xs text-muted-foreground">
               Showing {page * pageSize + 1}–
               {page * pageSize + paginatedRuns.length}
               {hasMore ? '+' : ''}
@@ -256,7 +256,7 @@ function SyncRow({ run }: { run: SyncRunSummary }) {
   const shortUserId = run.user_id.slice(0, 8);
 
   return (
-    <tr className="hover:bg-zinc-900/30 transition-colors">
+    <tr className="transition-colors hover:bg-muted/40">
       <td className="px-4 py-2.5">
         <Link
           to={ROUTES.user}
@@ -268,7 +268,7 @@ function SyncRow({ run }: { run: SyncRunSummary }) {
         </Link>
       </td>
       <td className="px-4 py-2.5 capitalize">{run.provider}</td>
-      <td className="px-4 py-2.5 text-zinc-400">
+      <td className="px-4 py-2.5 text-muted-foreground">
         <span className="inline-flex items-center gap-1.5">
           {sourceLabel}
           {run.source === 'linked_account' && run.primary_user_id && (
@@ -292,24 +292,24 @@ function SyncRow({ run }: { run: SyncRunSummary }) {
           {run.status.replace('_', ' ')}
         </span>
       </td>
-      <td className="px-4 py-2.5 text-zinc-400 tabular-nums">
+      <td className="px-4 py-2.5 tabular-nums text-muted-foreground">
         {formatRunDuration(run.started_at, run.ended_at)}
       </td>
-      <td className="px-4 py-2.5 text-zinc-400 max-w-xs">
+      <td className="max-w-xs px-4 py-2.5 text-muted-foreground">
         {run.items_processed !== null && (
           <div className="tabular-nums">
             {`${run.items_processed}${run.items_total !== null ? ` / ${run.items_total} items` : ' items'}`}
           </div>
         )}
         {run.message ? (
-          <span className="truncate block text-xs text-zinc-500">
+          <span className="block truncate text-xs text-muted-foreground/80">
             {run.message}
           </span>
         ) : (
           run.items_processed === null && '—'
         )}
       </td>
-      <td className="px-4 py-2.5 text-zinc-400">
+      <td className="px-4 py-2.5 text-muted-foreground">
         {formatRelative(run.last_update)}
       </td>
     </tr>
@@ -331,7 +331,7 @@ function FilterSelect({
     <select
       value={value ?? ''}
       onChange={(e) => onChange(e.target.value)}
-      className="h-8 rounded-md border border-zinc-800 bg-zinc-900 px-3 text-xs text-zinc-300 outline-none focus:ring-1 focus:ring-zinc-600"
+      className="h-8 rounded-md border border-border bg-input px-3 text-xs text-foreground outline-none focus:ring-1 focus:ring-ring"
     >
       <option value="">{placeholder}</option>
       {options.map((opt) => (

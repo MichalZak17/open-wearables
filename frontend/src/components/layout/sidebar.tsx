@@ -8,9 +8,11 @@ import {
   LayoutGrid,
   Loader2,
   LogOut,
+  Moon,
   RefreshCw,
   Search,
   Settings,
+  Sun,
   UserRound,
   Users,
   Webhook,
@@ -19,6 +21,7 @@ import logo from '@/logo.svg';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/use-auth';
 import { useUsers } from '@/hooks/api/use-users';
+import { useTheme } from '@/components/theme-provider';
 import { ROUTES } from '@/lib/constants/routes';
 import type { UserRead } from '@/lib/api/types';
 import {
@@ -271,6 +274,8 @@ function SidebarUserSearch() {
 export function Sidebar() {
   const location = useLocation();
   const { logout, isLoggingOut, me } = useAuth();
+  const { resolvedTheme, setTheme } = useTheme();
+  const nextTheme = resolvedTheme === 'dark' ? 'light' : 'dark';
   const fullName = [me?.first_name, me?.last_name].filter(Boolean).join(' ');
   const displayName = fullName || me?.email || 'Your account';
   const isSettingsActive = location.pathname.startsWith(ROUTES.settings);
@@ -285,8 +290,14 @@ export function Sidebar() {
               className="group flex w-full items-center gap-3 rounded-xl p-2 text-left outline-none transition-colors hover:bg-sidebar-accent focus-visible:ring-2 focus-visible:ring-sidebar-ring data-[state=open]:bg-sidebar-accent"
               aria-label="Open account menu"
             >
-              <span className="flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-white/10 bg-black shadow-sm">
-                <img src={logo} alt="" className="size-full" />
+              <span className="relative shrink-0">
+                <span className="flex size-10 items-center justify-center overflow-hidden rounded-xl border border-white/10 bg-black shadow-sm">
+                  <img src={logo} alt="" className="size-full" />
+                </span>
+                <span
+                  className="absolute -bottom-0.5 -right-0.5 size-3 rounded-full border-2 border-sidebar bg-success"
+                  aria-hidden="true"
+                />
               </span>
               <span className="min-w-0 flex-1">
                 <span className="block truncate text-[15px] font-semibold tracking-tight text-sidebar-foreground">
@@ -365,7 +376,7 @@ export function Sidebar() {
                     className={cn(
                       'group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
                       isActive
-                        ? 'bg-sidebar-accent text-sidebar-accent-foreground shadow-sm ring-1 ring-white/5'
+                        ? 'bg-sidebar-accent text-sidebar-accent-foreground shadow-sm ring-1 ring-sidebar-border'
                         : 'text-muted-foreground hover:bg-sidebar-accent/60 hover:text-sidebar-foreground'
                     )}
                   >
@@ -373,14 +384,14 @@ export function Sidebar() {
                       className={cn(
                         'size-4 shrink-0 transition-colors',
                         isActive
-                          ? 'text-sidebar-primary'
+                          ? 'text-sidebar-foreground'
                           : 'text-muted-foreground group-hover:text-sidebar-foreground'
                       )}
                       aria-hidden="true"
                     />
                     <span>{item.title}</span>
                     {'badge' in item ? (
-                      <span className="ml-auto rounded-full border border-primary/20 bg-primary/10 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-primary-muted">
+                      <span className="ml-auto rounded-md bg-success/10 px-1.5 py-0.5 text-[10px] font-semibold text-success ring-1 ring-inset ring-success/20">
                         {item.badge}
                       </span>
                     ) : null}
@@ -393,19 +404,34 @@ export function Sidebar() {
       </nav>
 
       <div className="space-y-1 p-3">
-        <Link
-          to={ROUTES.settings}
-          aria-current={isSettingsActive ? 'page' : undefined}
-          className={cn(
-            'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
-            isSettingsActive
-              ? 'bg-sidebar-accent text-sidebar-accent-foreground'
-              : 'text-muted-foreground hover:bg-sidebar-accent/60 hover:text-sidebar-foreground'
-          )}
-        >
-          <Settings className="size-4" aria-hidden="true" />
-          Settings
-        </Link>
+        <div className="flex items-center gap-1">
+          <Link
+            to={ROUTES.settings}
+            aria-current={isSettingsActive ? 'page' : undefined}
+            className={cn(
+              'flex flex-1 items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
+              isSettingsActive
+                ? 'bg-sidebar-accent text-sidebar-accent-foreground'
+                : 'text-muted-foreground hover:bg-sidebar-accent/60 hover:text-sidebar-foreground'
+            )}
+          >
+            <Settings className="size-4" aria-hidden="true" />
+            Settings
+          </Link>
+          <button
+            type="button"
+            aria-label={`Switch to ${nextTheme} theme`}
+            title={`Switch to ${nextTheme} theme`}
+            onClick={() => setTheme(nextTheme)}
+            className="flex size-10 shrink-0 items-center justify-center rounded-lg text-muted-foreground outline-none transition-colors hover:bg-sidebar-accent/60 hover:text-sidebar-foreground focus-visible:ring-2 focus-visible:ring-sidebar-ring"
+          >
+            {resolvedTheme === 'dark' ? (
+              <Moon className="size-4" aria-hidden="true" />
+            ) : (
+              <Sun className="size-4" aria-hidden="true" />
+            )}
+          </button>
+        </div>
         <a
           href={DOCUMENTATION_URL}
           target="_blank"

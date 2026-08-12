@@ -18,11 +18,7 @@ export function LoadingSpinner({
 
   return (
     <Loader2
-      className={cn(
-        'animate-spin text-primary drop-shadow-[0_0_8px_hsla(185,100%,60%,0.6)]',
-        sizeClasses[size],
-        className
-      )}
+      className={cn('animate-spin text-primary', sizeClasses[size], className)}
     />
   );
 }

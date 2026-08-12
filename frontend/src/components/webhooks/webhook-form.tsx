@@ -251,8 +251,8 @@ export function WebhookForm({
                     variant={isOn ? 'default' : 'outline'}
                     className={
                       isOn
-                        ? 'cursor-pointer bg-white text-black hover:bg-zinc-200'
-                        : 'cursor-pointer border-border text-muted-foreground hover:border-zinc-500 hover:text-foreground'
+                        ? 'cursor-pointer bg-primary text-primary-foreground hover:bg-primary-hover'
+                        : 'cursor-pointer border-border text-muted-foreground hover:border-border-hover hover:text-foreground'
                     }
                   >
                     {name}

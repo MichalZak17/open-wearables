@@ -38,22 +38,22 @@ function CoveragePage() {
           description="What each provider is capable of delivering, by API layer."
         />
 
-        <div className="flex items-start gap-2.5 rounded-lg border border-zinc-800 bg-zinc-900/40 px-4 py-3 text-sm text-zinc-400">
-          <Info className="mt-0.5 h-4 w-4 shrink-0 text-zinc-500" />
+        <div className="flex items-start gap-2.5 rounded-lg border border-border bg-muted/40 px-4 py-3 text-sm text-muted-foreground">
+          <Info className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
           <p>
             This matrix shows provider{' '}
-            <span className="text-zinc-200">capabilities</span> — the data types
-            Open Wearables can ingest from each provider. A green dot means the
-            type is supported and normalized in code; it does{' '}
-            <span className="text-zinc-200">not</span> reflect what has actually
-            been synced for your users in this instance.
+            <span className="text-foreground">capabilities</span> — the data
+            types Open Wearables can ingest from each provider. A green dot
+            means the type is supported and normalized in code; it does{' '}
+            <span className="text-foreground">not</span> reflect what has
+            actually been synced for your users in this instance.
           </p>
         </div>
 
         {isLoading && <LoadingSkeleton />}
 
         {error && (
-          <div className="rounded-lg border border-red-900/40 bg-red-950/20 px-4 py-3 text-sm text-red-400">
+          <div className="rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
             Failed to load coverage data.
           </div>
         )}
@@ -61,7 +61,7 @@ function CoveragePage() {
         {data && (
           <div className="space-y-6">
             <div className="space-y-3">
-              <p className="text-xs font-medium uppercase tracking-wider text-zinc-500">
+              <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
                 Inspect a provider
               </p>
               <div className="flex flex-wrap gap-2.5">
@@ -87,7 +87,7 @@ function CoveragePage() {
 
             {selected && <ProviderDetail data={data} provider={selected} />}
 
-            <div className="rounded-xl border border-zinc-800 bg-zinc-900/30 p-4">
+            <div className="rounded-xl border border-border bg-card/50 p-4">
               <CoverageMatrix data={data} />
             </div>
           </div>

@@ -10,18 +10,22 @@ interface MatrixProps {
 
 function Matrix({ providers, rows }: MatrixProps) {
   if (rows.length === 0) {
-    return <p className="text-sm text-zinc-500 py-4">No data for this layer.</p>;
+    return (
+      <p className="py-4 text-sm text-muted-foreground">
+        No data for this layer.
+      </p>
+    );
   }
   return (
     <div className="overflow-x-auto">
       <table className="w-full text-sm border-separate border-spacing-0">
         <thead>
           <tr>
-            <th className="sticky left-0 bg-zinc-950 px-3 py-2.5 text-left text-xs font-medium text-zinc-500 w-56 border-b border-zinc-800" />
+            <th className="sticky left-0 w-56 border-b border-border bg-card px-3 py-2.5 text-left text-xs font-medium text-muted-foreground" />
             {providers.map((p) => (
               <th
                 key={p}
-                className="px-2 py-2.5 text-center min-w-[72px] border-b border-zinc-800"
+                className="min-w-[72px] border-b border-border px-2 py-2.5 text-center"
               >
                 <SourceBadge provider={p} />
               </th>
@@ -30,12 +34,17 @@ function Matrix({ providers, rows }: MatrixProps) {
         </thead>
         <tbody>
           {rows.map((row, i) => (
-            <tr key={row.code} className={i % 2 === 0 ? 'bg-zinc-900/20' : 'bg-transparent'}>
-              <td className="sticky left-0 bg-inherit px-3 py-2 border-b border-zinc-800/40">
+            <tr
+              key={row.code}
+              className={i % 2 === 0 ? 'bg-muted/20' : 'bg-transparent'}
+            >
+              <td className="sticky left-0 border-b border-border/40 bg-inherit px-3 py-2">
                 <div className="flex items-baseline gap-2">
-                  <code className="text-xs text-zinc-300 font-mono">{row.code}</code>
+                  <code className="font-mono text-xs text-foreground">
+                    {row.code}
+                  </code>
                   {row.unit && (
-                    <span className="text-[10px] text-zinc-400 bg-zinc-800 px-1 py-0.5 rounded">
+                    <span className="rounded bg-muted px-1 py-0.5 text-[10px] text-muted-foreground">
                       {row.unit}
                     </span>
                   )}
@@ -44,7 +53,10 @@ function Matrix({ providers, rows }: MatrixProps) {
               {providers.map((p) => {
                 const supported = row.supportedBy.includes(p);
                 return (
-                  <td key={p} className="px-2 py-2 text-center border-b border-zinc-800/40">
+                  <td
+                    key={p}
+                    className="border-b border-border/40 px-2 py-2 text-center"
+                  >
                     <span className="sr-only">
                       {supported ? 'Supported' : 'Not supported'}
                     </span>
@@ -53,7 +65,7 @@ function Matrix({ providers, rows }: MatrixProps) {
                       className={
                         supported
                           ? 'inline-flex h-2 w-2 rounded-full bg-emerald-500 ring-2 ring-emerald-500/20'
-                          : 'inline-flex h-2 w-2 rounded-full bg-zinc-800'
+                          : 'inline-flex h-2 w-2 rounded-full bg-muted-foreground/30'
                       }
                     />
                   </td>
@@ -77,7 +89,11 @@ function TimeseriesTab({
   const [activeCategory, setActiveCategory] = useState(categories[0]?.name ?? '');
 
   if (categories.length === 0) {
-    return <p className="text-sm text-zinc-500 py-4">No timeseries data.</p>;
+    return (
+      <p className="py-4 text-sm text-muted-foreground">
+        No timeseries data.
+      </p>
+    );
   }
 
   // Guard against a stale selection if the category list changes.
@@ -87,7 +103,7 @@ function TimeseriesTab({
 
   return (
     <Tabs value={active} onValueChange={setActiveCategory} className="space-y-4">
-      <TabsList className="flex-wrap h-auto gap-1 bg-zinc-900/60 p-1">
+      <TabsList className="h-auto flex-wrap gap-1 bg-muted/60 p-1">
         {categories.map((cat) => (
           <TabsTrigger key={cat.name} value={cat.name} className="text-xs">
             {cat.name}
@@ -121,7 +137,7 @@ export function CoverageMatrix({ data }: Props) {
 
   return (
     <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-5">
-      <TabsList className="bg-zinc-900/60 border border-zinc-800 p-1 h-auto">
+      <TabsList className="h-auto border border-border bg-muted/60 p-1">
         <TabsTrigger value="timeseries" className="text-sm">Timeseries</TabsTrigger>
         <TabsTrigger value="workout" className="text-sm">Workout</TabsTrigger>
         <TabsTrigger value="sleep" className="text-sm">Sleep</TabsTrigger>

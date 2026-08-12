@@ -3,17 +3,17 @@ import type { CoverageResponse } from '@/lib/api';
 
 function Stat({ label, value }: { label: string; value: number }) {
   return (
-    <div className="rounded-lg border border-zinc-800 bg-zinc-950/40 px-3 py-2 text-center">
+    <div className="rounded-lg border border-border bg-background/40 px-3 py-2 text-center">
       <div
         className={
           value === 0
-            ? 'text-lg font-semibold tabular-nums text-zinc-600'
+            ? 'text-lg font-semibold tabular-nums text-muted-foreground/60'
             : 'text-lg font-semibold tabular-nums text-emerald-400'
         }
       >
         {value}
       </div>
-      <div className="text-[10px] uppercase tracking-wide text-zinc-500">
+      <div className="text-[10px] uppercase tracking-wide text-muted-foreground">
         {label}
       </div>
     </div>
@@ -27,12 +27,12 @@ interface Chip {
 
 function GroupCard({ title, chips }: { title: string; chips: Chip[] }) {
   return (
-    <div className="space-y-2.5 rounded-lg border border-zinc-800 bg-zinc-950/40 p-3.5">
+    <div className="space-y-2.5 rounded-lg border border-border bg-background/40 p-3.5">
       <div className="flex items-center justify-between gap-2">
-        <h4 className="text-xs font-medium uppercase tracking-wider text-zinc-400">
+        <h4 className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
           {title}
         </h4>
-        <span className="text-[10px] tabular-nums text-zinc-600">
+        <span className="text-[10px] tabular-nums text-muted-foreground/60">
           {chips.length}
         </span>
       </div>
@@ -40,10 +40,14 @@ function GroupCard({ title, chips }: { title: string; chips: Chip[] }) {
         {chips.map((c) => (
           <span
             key={c.code}
-            className="inline-flex items-baseline gap-1 rounded-md bg-zinc-800/70 px-2 py-1"
+            className="inline-flex items-baseline gap-1 rounded-md bg-muted/70 px-2 py-1"
           >
-            <code className="font-mono text-xs text-zinc-200">{c.code}</code>
-            {c.unit && <span className="text-[10px] text-zinc-500">{c.unit}</span>}
+            <code className="font-mono text-xs text-foreground">{c.code}</code>
+            {c.unit && (
+              <span className="text-[10px] text-muted-foreground">
+                {c.unit}
+              </span>
+            )}
           </span>
         ))}
       </div>
@@ -91,12 +95,14 @@ export function ProviderDetail({ data, provider }: Props) {
   ].filter((c) => c.chips.length > 0);
 
   return (
-    <div className="overflow-hidden rounded-xl border border-zinc-800 bg-zinc-900/50">
+    <div className="overflow-hidden rounded-xl border border-border bg-card/50">
       {/* Header */}
-      <div className="flex flex-col gap-4 border-b border-zinc-800/80 bg-zinc-900/60 p-5 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col gap-4 border-b border-border/80 bg-muted/60 p-5 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-3">
           <SourceBadge provider={provider} />
-          <span className="text-sm text-zinc-400">supported data types</span>
+          <span className="text-sm text-muted-foreground">
+            supported data types
+          </span>
         </div>
         <div className="grid grid-cols-3 gap-2 sm:grid-cols-5">
           <Stat label="Timeseries" value={tsCount} />

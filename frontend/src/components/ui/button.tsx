@@ -10,21 +10,21 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default:
-          'bg-white text-black hover:bg-zinc-200 border border-transparent',
+          'bg-primary text-primary-foreground hover:bg-primary-hover border border-transparent',
         destructive:
-          'bg-destructive-muted/10 text-destructive-muted border border-red-500/30 hover:border-red-500/50 hover:shadow-[0_0_15px_hsla(350,100%,55%,0.3)]',
+          'bg-destructive-muted/10 text-destructive-muted border border-destructive/30 hover:border-destructive/50 hover:shadow-[0_0_15px_hsl(var(--destructive)/0.2)]',
         'destructive-outline':
-          'border border-border/50 bg-background hover:bg-card hover:border-red-500/50 hover:text-destructive-muted hover:shadow-[0_0_10px_hsla(350,100%,55%,0.2)]',
+          'border border-border/50 bg-background hover:bg-card hover:border-destructive/50 hover:text-destructive-muted',
         outline:
-          'border border-border/50 bg-background hover:bg-card hover:border-primary/50 hover:shadow-[0_0_10px_hsla(185,100%,50%,0.2)]',
+          'border border-border/50 bg-background hover:bg-card hover:border-primary/50',
         secondary:
           'bg-muted text-foreground hover:bg-muted-foreground/40 border border-border/50',
         ghost:
-          'border border-transparent hover:border-border/50 hover:bg-card hover:text-foreground hover:shadow-[0_0_8px_hsla(185,100%,50%,0.15)]',
+          'border border-transparent hover:border-border/50 hover:bg-card hover:text-foreground',
         'ghost-faded':
-          'border border-transparent text-muted-foreground hover:border-border/50 hover:bg-card hover:text-foreground/90 hover:shadow-[0_0_8px_hsla(185,100%,50%,0.15)]',
+          'border border-transparent text-muted-foreground hover:border-border/50 hover:bg-card hover:text-foreground/90',
         link: 'text-primary underline-offset-4 hover:underline',
-        neon: 'bg-primary text-primary-foreground border border-border/50 hover:bg-primary-hover hover:shadow-[0_0_20px_hsla(185,100%,50%,0.4)] transition-all duration-300 ease-out active:scale-[0.98]',
+        neon: 'bg-primary text-primary-foreground border border-primary/30 hover:bg-primary-hover transition-all duration-300 ease-out active:scale-[0.98]',
       },
       size: {
         default: 'h-10 px-4 py-2',

@@ -85,7 +85,7 @@ export function ProviderItem({
                         currentMode === mode && mode === 'webhook'
                           ? 'bg-indigo-500/20 text-indigo-300 shadow-sm border border-indigo-500/30'
                           : currentMode === mode && mode === 'pull'
-                            ? 'bg-muted-foreground/40 text-foreground shadow-sm border border-zinc-600'
+                            ? 'border border-border-hover bg-muted-foreground/40 text-foreground shadow-sm'
                             : 'text-muted-foreground hover:text-foreground/90 hover:bg-muted/60'
                       )}
                     >
