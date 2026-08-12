@@ -1,29 +1,23 @@
-import { useEffect, useState } from 'react';
-import { Link, useLocation, useNavigate } from '@tanstack/react-router';
+import { Link, useLocation } from '@tanstack/react-router';
 import {
   ChevronsUpDown,
   ExternalLink,
   FileText,
   Home,
   LayoutGrid,
-  Loader2,
   LogOut,
   Moon,
   RefreshCw,
-  Search,
   Settings,
   Sun,
-  UserRound,
   Users,
   Webhook,
 } from 'lucide-react';
 import logo from '@/logo.svg';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/use-auth';
-import { useUsers } from '@/hooks/api/use-users';
 import { useTheme } from '@/components/theme-provider';
 import { ROUTES } from '@/lib/constants/routes';
-import type { UserRead } from '@/lib/api/types';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -73,203 +67,6 @@ const navigationGroups = [
 ] as const;
 
 const DOCUMENTATION_URL = 'https://openwearables.io/docs';
-const SEARCH_DEBOUNCE_MS = 300;
-const MINIMUM_SEARCH_LENGTH = 2;
-const SEARCH_RESULTS_ID = 'sidebar-user-search-results';
-
-function getUserName(user: UserRead): string {
-  return [user.first_name, user.last_name].filter(Boolean).join(' ');
-}
-
-function getPrimaryUserLabel(user: UserRead): string {
-  return (
-    getUserName(user) || user.email || user.external_user_id || 'Unnamed user'
-  );
-}
-
-function getSecondaryUserLabel(user: UserRead): string | null {
-  const name = getUserName(user);
-
-  if (name && user.email) return user.email;
-  if (user.external_user_id) return user.external_user_id;
-  return null;
-}
-
-function SidebarUserSearch() {
-  const navigate = useNavigate();
-  const [query, setQuery] = useState('');
-  const [debouncedQuery, setDebouncedQuery] = useState('');
-  const [isOpen, setIsOpen] = useState(false);
-  const [activeIndex, setActiveIndex] = useState(0);
-  const normalizedQuery = query.trim();
-  const canSearch = debouncedQuery.length >= MINIMUM_SEARCH_LENGTH;
-  const { data, isFetching, isError } = useUsers(
-    {
-      page: 1,
-      limit: 6,
-      sort_by: 'created_at',
-      sort_order: 'desc',
-      search: debouncedQuery,
-    },
-    canSearch
-  );
-  const isWaitingForDebounce =
-    normalizedQuery.length >= MINIMUM_SEARCH_LENGTH &&
-    normalizedQuery !== debouncedQuery;
-  const showResults = isOpen && normalizedQuery.length >= MINIMUM_SEARCH_LENGTH;
-  const isLoading = isWaitingForDebounce || isFetching;
-  const results = isLoading ? [] : (data?.items ?? []);
-
-  useEffect(() => {
-    const timer = window.setTimeout(() => {
-      setDebouncedQuery(normalizedQuery);
-    }, SEARCH_DEBOUNCE_MS);
-
-    return () => window.clearTimeout(timer);
-  }, [normalizedQuery]);
-
-  const openUser = (userId: string) => {
-    setQuery('');
-    setDebouncedQuery('');
-    setIsOpen(false);
-    navigate({
-      to: `${ROUTES.users}/$userId`,
-      params: { userId },
-    });
-  };
-
-  return (
-    <div
-      className="relative px-3 pb-2 pt-3"
-      onFocus={() => setIsOpen(true)}
-      onBlur={(event) => {
-        if (!event.currentTarget.contains(event.relatedTarget)) {
-          setIsOpen(false);
-        }
-      }}
-    >
-      <div className="relative">
-        {isLoading ? (
-          <Loader2
-            className="absolute left-3 top-1/2 size-4 -translate-y-1/2 animate-spin text-sidebar-primary"
-            aria-hidden="true"
-          />
-        ) : (
-          <Search
-            className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
-            aria-hidden="true"
-          />
-        )}
-        <input
-          type="search"
-          value={query}
-          onChange={(event) => {
-            setQuery(event.target.value);
-            setActiveIndex(0);
-            setIsOpen(true);
-          }}
-          onKeyDown={(event) => {
-            if (!showResults || results.length === 0) return;
-
-            if (event.key === 'ArrowDown') {
-              event.preventDefault();
-              setActiveIndex((index) =>
-                Math.min(index + 1, results.length - 1)
-              );
-            } else if (event.key === 'ArrowUp') {
-              event.preventDefault();
-              setActiveIndex((index) => Math.max(index - 1, 0));
-            } else if (event.key === 'Enter') {
-              event.preventDefault();
-              const selectedUser = results[activeIndex];
-              if (selectedUser) openUser(selectedUser.id);
-            } else if (event.key === 'Escape') {
-              setIsOpen(false);
-            }
-          }}
-          placeholder="Search users…"
-          aria-label="Search users"
-          role="combobox"
-          aria-autocomplete="list"
-          aria-expanded={showResults}
-          aria-controls={showResults ? SEARCH_RESULTS_ID : undefined}
-          aria-activedescendant={
-            showResults && results[activeIndex]
-              ? `sidebar-user-result-${results[activeIndex].id}`
-              : undefined
-          }
-          autoComplete="off"
-          spellCheck={false}
-          className="h-9 w-full rounded-lg border border-sidebar-border bg-sidebar-accent/60 py-1.5 pl-9 pr-3 text-sm text-sidebar-foreground outline-none transition-colors placeholder:text-muted-foreground hover:border-border-hover focus:border-sidebar-primary/50 focus:bg-sidebar-accent focus:ring-2 focus:ring-sidebar-ring/20"
-        />
-      </div>
-
-      {showResults ? (
-        <div
-          id={SEARCH_RESULTS_ID}
-          role="listbox"
-          aria-label="User search results"
-          className="absolute left-3 right-3 top-[calc(100%-0.5rem)] z-50 overflow-hidden rounded-xl border border-sidebar-border bg-popover p-1.5 shadow-2xl"
-        >
-          {isLoading ? (
-            <p
-              className="px-3 py-5 text-center text-xs text-muted-foreground"
-              aria-live="polite"
-            >
-              Searching users…
-            </p>
-          ) : isError ? (
-            <p
-              className="px-3 py-5 text-center text-xs text-destructive-muted"
-              role="alert"
-            >
-              User search is unavailable.
-            </p>
-          ) : results.length === 0 ? (
-            <p
-              className="px-3 py-5 text-center text-xs text-muted-foreground"
-              aria-live="polite"
-            >
-              No users found for “{normalizedQuery}”.
-            </p>
-          ) : (
-            results.map((user, index) => (
-              <button
-                key={user.id}
-                id={`sidebar-user-result-${user.id}`}
-                type="button"
-                role="option"
-                aria-selected={index === activeIndex}
-                onMouseEnter={() => setActiveIndex(index)}
-                onClick={() => openUser(user.id)}
-                className={cn(
-                  'flex w-full items-center gap-3 rounded-lg px-2.5 py-2 text-left outline-none transition-colors',
-                  index === activeIndex
-                    ? 'bg-sidebar-accent text-sidebar-accent-foreground'
-                    : 'text-muted-foreground hover:bg-sidebar-accent/70 hover:text-sidebar-foreground'
-                )}
-              >
-                <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary ring-1 ring-primary/15">
-                  <UserRound className="size-4" aria-hidden="true" />
-                </span>
-                <span className="min-w-0 flex-1">
-                  <span className="block truncate text-sm font-medium text-sidebar-foreground">
-                    {getPrimaryUserLabel(user)}
-                  </span>
-                  {getSecondaryUserLabel(user) ? (
-                    <span className="block truncate text-xs text-muted-foreground">
-                      {getSecondaryUserLabel(user)}
-                    </span>
-                  ) : null}
-                </span>
-              </button>
-            ))
-          )}
-        </div>
-      ) : null}
-    </div>
-  );
-}
 
 export function Sidebar() {
   const location = useLocation();
@@ -348,8 +145,6 @@ export function Sidebar() {
         </DropdownMenu>
       </div>
 
-      <SidebarUserSearch />
-
       <nav
         className="flex-1 overflow-y-auto px-3 py-4"
         aria-label="Main navigation"
@@ -376,7 +171,7 @@ export function Sidebar() {
                     className={cn(
                       'group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
                       isActive
-                        ? 'bg-sidebar-accent text-sidebar-accent-foreground shadow-sm ring-1 ring-sidebar-border'
+                        ? 'bg-sidebar-accent text-sidebar-accent-foreground'
                         : 'text-muted-foreground hover:bg-sidebar-accent/60 hover:text-sidebar-foreground'
                     )}
                   >
