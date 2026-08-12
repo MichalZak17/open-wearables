@@ -99,13 +99,13 @@
   }
 
   .light {
-    /* Workspace is bright (near-white); the sidebar is the muted grey chrome. */
-    --background: 220 33% 98%;
+    /* Neutral light surfaces keep white cards crisp without a blue cast. */
+    --background: 0 0% 98.5%;
     --background-elevated: 0 0% 100%;
     --foreground: 220 25% 11%;
 
-    --card: 0 0% 100%; /* white cards, lifted by border + shadow */
-    --card-elevated: 220 20% 96%;
+    --card: 0 0% 100%;
+    --card-elevated: 0 0% 97%;
     --card-foreground: 220 25% 11%;
 
     --popover: 0 0% 100%;
@@ -117,19 +117,19 @@
     --primary-glow: 220 24% 22%;
     --primary-foreground: 220 20% 99%;
 
-    --secondary: 220 20% 95%;
-    --secondary-hover: 220 17% 91%;
+    --secondary: 0 0% 96%;
+    --secondary-hover: 0 0% 92%;
     --secondary-muted: 220 10% 40%;
     --secondary-glow: 220 15% 25%;
     --secondary-foreground: 220 25% 11%;
 
-    --accent: 220 20% 95%;
-    --accent-hover: 220 17% 91%;
+    --accent: 0 0% 96%;
+    --accent-hover: 0 0% 92%;
     --accent-muted: 220 10% 35%;
     --accent-glow: 220 15% 20%;
     --accent-foreground: 220 25% 11%;
 
-    --muted: 220 20% 95%;
+    --muted: 0 0% 96%;
     --muted-foreground: 220 10% 42%;
     --foreground-muted: 220 14% 25%;
     --foreground-subtle: 220 10% 48%;
@@ -149,21 +149,20 @@
     --destructive-glow: 347 77% 50%; /* #E11D48 */
     --destructive-foreground: 0 0% 100%; /* #FFFFFF */
 
-    --border: 220 16% 88%;
-    --border-hover: 220 13% 76%;
+    --border: 0 0% 89%;
+    --border-hover: 0 0% 78%;
     --border-glow: 220 12% 55%;
     --input: 0 0% 100%;
     --ring: 220 25% 32%;
 
-    /* Sidebar is the muted grey chrome; the bright workspace sits beside it.
-       Active/hover is a flat soft-grey highlight (no shadow) — Klaviyo style. */
-    --sidebar: 220 20% 95%;
+    /* The sidebar is a true-white navigation surface, separated by one line. */
+    --sidebar: 0 0% 100%;
     --sidebar-foreground: 220 24% 16%;
     --sidebar-primary: 220 25% 12%;
     --sidebar-primary-foreground: 220 20% 99%;
-    --sidebar-accent: 220 16% 90%;
+    --sidebar-accent: 0 0% 96%;
     --sidebar-accent-foreground: 220 25% 12%;
-    --sidebar-border: 220 16% 88%;
+    --sidebar-border: 0 0% 89%;
     --sidebar-ring: 220 25% 32%;
 
     --chart-1: 239 84% 67%; /* Indigo 500 */

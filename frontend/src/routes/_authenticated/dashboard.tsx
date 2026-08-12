@@ -1,14 +1,14 @@
 import { createFileRoute } from '@tanstack/react-router';
+import {
+  DashboardErrorState,
+  DashboardLoadingState,
+  DataMetricsSection,
+  ProvidersSection,
+  RecentUsersSection,
+  StatsGrid,
+} from '@/components/pages/dashboard';
 import { useDashboardStats } from '@/hooks/api/use-dashboard';
 import { useUsers } from '@/hooks/api/use-users';
-import { PageHeader } from '@/components/ui/page-header';
-import {
-  StatsGrid,
-  DataMetricsSection,
-  RecentUsersSection,
-  DashboardLoadingState,
-  DashboardErrorState,
-} from '@/components/pages/dashboard';
 
 export const Route = createFileRoute('/_authenticated/dashboard')({
   component: DashboardPage,
@@ -16,11 +16,6 @@ export const Route = createFileRoute('/_authenticated/dashboard')({
 
 function DashboardPage() {
   const { data: stats, isLoading, error, refetch } = useDashboardStats();
-  const { data: users, isLoading: isLoadingUsers } = useUsers({
-    sort_by: 'created_at',
-    sort_order: 'desc',
-    limit: 5,
-  });
   const { data: lastSyncedUsers, isLoading: isLoadingLastSynced } = useUsers({
     sort_by: 'last_synced_at',
     sort_order: 'desc',
@@ -35,54 +30,53 @@ function DashboardPage() {
     return <DashboardErrorState onRetry={refetch} />;
   }
 
+  const recentUsers = (lastSyncedUsers?.items ?? []).filter(
+    (user) => user.last_synced_at
+  );
+
   return (
-    <div className="relative min-h-full p-6 md:p-8">
-      {/* Ambient background gradient (very subtle) */}
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-0 overflow-hidden"
-      >
-        <div className="absolute -left-32 top-0 h-72 w-72 rounded-full bg-primary/4 blur-3xl" />
-        <div className="absolute right-0 bottom-0 h-72 w-72 rounded-full bg-accent/3 blur-3xl" />
-      </div>
+    <div className="min-h-full px-4 py-7 sm:px-6 sm:py-8 lg:px-10">
+      <div className="mx-auto w-full max-w-[96rem]">
+        <header>
+          <div className="inline-flex items-center gap-1.5 rounded-full border border-success/20 bg-success/8 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-success-muted">
+            <span
+              className="size-1.5 rounded-full bg-success"
+              aria-hidden="true"
+            />
+            Live
+          </div>
+          <h1 className="mt-2.5 text-3xl font-semibold tracking-tight text-foreground">
+            Dashboard
+          </h1>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Your platform overview and key metrics
+          </p>
+        </header>
 
-      <div className="relative space-y-6">
-        <PageHeader
-          title="Dashboard"
-          description="Your platform overview and key metrics"
-          badge={
-            <div className="inline-flex items-center gap-2 rounded-full border border-success-muted/30 bg-success-muted/8 px-3 py-1">
-              <span className="relative flex h-1.5 w-1.5">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-success-muted opacity-60" />
-                <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-success-muted" />
-              </span>
-              <span className="text-[10px] font-medium uppercase tracking-wider text-success-muted">
-                Live
-              </span>
-            </div>
-          }
-        />
-
-        {/* Stats Grid */}
-        <StatsGrid stats={stats} />
-
-        {/* Charts Section */}
-        <div className="grid gap-6 lg:grid-cols-7">
+        <section
+          aria-label="Platform overview"
+          className="mt-6 overflow-hidden rounded-xl border border-border bg-card"
+        >
+          <StatsGrid stats={stats} />
           <DataMetricsSection
             connectionsCoverage={stats.connections_coverage}
             totalUsers={stats.total_users.count}
-            className="lg:col-span-4"
+          />
+        </section>
+
+        <section
+          aria-label="Providers and recent activity"
+          className="mt-5 grid overflow-hidden rounded-xl border border-border bg-card lg:grid-cols-[minmax(20rem,5fr)_minmax(30rem,7fr)] lg:divide-x lg:divide-border"
+        >
+          <ProvidersSection
+            providers={stats.connections_coverage.top_providers}
           />
           <RecentUsersSection
-            users={users?.items ?? []}
-            lastSyncedUsers={(lastSyncedUsers?.items ?? []).filter(
-              (u) => u.last_synced_at
-            )}
-            isLoading={isLoadingUsers}
-            isLoadingLastSynced={isLoadingLastSynced}
-            className="lg:col-span-3"
+            users={recentUsers}
+            isLoading={isLoadingLastSynced}
+            className="border-t border-border lg:border-t-0"
           />
-        </div>
+        </section>
       </div>
     </div>
   );

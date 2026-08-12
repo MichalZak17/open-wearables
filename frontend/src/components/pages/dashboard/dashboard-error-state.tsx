@@ -1,6 +1,6 @@
 import { AlertTriangle, RefreshCw } from 'lucide-react';
-import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
 export interface DashboardErrorStateProps {
   onRetry: () => void;
@@ -12,23 +12,24 @@ export function DashboardErrorState({
   className,
 }: DashboardErrorStateProps) {
   return (
-    <div className={cn('p-6 md:p-8', className)}>
-      <div className="relative overflow-hidden rounded-2xl border border-destructive/30 bg-gradient-to-br from-card/80 to-card/40 p-12 text-center backdrop-blur-xl">
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute -right-12 -top-12 h-48 w-48 rounded-full bg-destructive/15 blur-3xl"
-        />
-        <div className="relative mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl border border-destructive/30 bg-destructive/10">
-          <AlertTriangle className="h-6 w-6 text-destructive" />
-        </div>
-        <h2 className="relative text-lg font-semibold text-foreground">
-          Something went wrong
-        </h2>
-        <p className="relative mb-6 mt-1 text-sm text-muted-foreground">
-          Failed to load dashboard data. Please try again.
+    <div
+      className={cn(
+        'flex min-h-full items-center justify-center px-4 py-12 sm:px-6',
+        className
+      )}
+    >
+      <div className="w-full max-w-md rounded-xl border border-border bg-card p-8 text-center">
+        <span className="mx-auto flex size-10 items-center justify-center rounded-full bg-destructive/8 text-destructive">
+          <AlertTriangle className="size-5" aria-hidden="true" />
+        </span>
+        <h1 className="mt-4 text-base font-semibold text-foreground">
+          Dashboard unavailable
+        </h1>
+        <p className="mt-1.5 text-sm text-muted-foreground">
+          We could not load your platform metrics. Try the request again.
         </p>
-        <Button variant="outline" onClick={onRetry} className="relative">
-          <RefreshCw className="mr-2 h-4 w-4" />
+        <Button variant="outline" onClick={onRetry} className="mt-5">
+          <RefreshCw className="size-4" aria-hidden="true" />
           Retry
         </Button>
       </div>
