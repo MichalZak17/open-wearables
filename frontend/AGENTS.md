@@ -66,9 +66,9 @@ src/
 
 ### layout/
 
-| Component       | Description                                          |
-| --------------- | ---------------------------------------------------- |
-| `SimpleSidebar` | Navigation sidebar with menu items and logout button |
+| Component | Description                                         |
+| --------- | --------------------------------------------------- |
+| `Sidebar` | Navigation sidebar with menu items and account menu |
 
 ### login/
 

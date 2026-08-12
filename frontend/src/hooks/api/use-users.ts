@@ -11,11 +11,12 @@ import type {
   UserQueryParams,
 } from '../../lib/api/types';
 
-export function useUsers(params?: UserQueryParams) {
+export function useUsers(params?: UserQueryParams, enabled = true) {
   return useQuery({
     queryKey: queryKeys.users.list(params),
     queryFn: () => usersService.getAll(params),
     placeholderData: (previousData) => previousData,
+    enabled,
   });
 }
 

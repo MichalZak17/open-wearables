@@ -1,5 +1,5 @@
 import { createFileRoute, Outlet, redirect } from '@tanstack/react-router';
-import { SimpleSidebar } from '@/components/layout/simple-sidebar';
+import { Sidebar } from '@/components/layout/sidebar';
 import { isAuthenticated } from '@/lib/auth/session';
 import { DEFAULT_REDIRECTS } from '@/lib/constants/routes';
 
@@ -19,9 +19,9 @@ export const Route = createFileRoute('/_authenticated')({
 
 function AuthenticatedLayout() {
   return (
-    <div className="flex min-h-screen w-full bg-black">
-      <SimpleSidebar />
-      <main className="flex-1 overflow-auto bg-zinc-950 border-l border-zinc-800/50">
+    <div className="flex min-h-screen w-full bg-background">
+      <Sidebar />
+      <main className="flex-1 overflow-auto bg-background">
         <Outlet />
       </main>
     </div>

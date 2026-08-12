@@ -72,14 +72,14 @@
     --input: 245 12% 16%; /* #242430 */
     --ring: 185 100% 50%; /* #00E5FF */
 
-    /* === SIDEBAR - VERY DARK FOR HIGH CONTRAST === */
-    --sidebar: 240 25% 3%; /* #050508 - Almost black sidebar */
+    /* === SIDEBAR - ELEVATED NAVIGATION SURFACE === */
+    --sidebar: 245 12% 14%; /* #20202A - Distinct without feeling black */
     --sidebar-foreground: 0 0% 92%; /* #EBEBEB */
     --sidebar-primary: 185 100% 50%; /* #00E5FF */
     --sidebar-primary-foreground: 240 15% 6%; /* #0D0D12 */
-    --sidebar-accent: 248 20% 8%; /* #101018 */
+    --sidebar-accent: 246 13% 20%; /* #2D2D3A */
     --sidebar-accent-foreground: 0 0% 95%; /* #F2F2F2 */
-    --sidebar-border: 245 20% 10%; /* #141420 */
+    --sidebar-border: 245 12% 24%; /* #383847 */
     --sidebar-ring: 185 100% 50%; /* #00E5FF */
 
     /* === CHART COLORS === */
