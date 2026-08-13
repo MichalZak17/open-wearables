@@ -7,6 +7,7 @@ import {
   RecentUsersSection,
   StatsGrid,
 } from '@/components/pages/dashboard';
+import { Card } from '@/components/ui/card';
 import { useDashboardStats } from '@/hooks/api/use-dashboard';
 import { useUsers } from '@/hooks/api/use-users';
 
@@ -53,20 +54,22 @@ function DashboardPage() {
           </p>
         </header>
 
-        <section
+        <Card
+          role="region"
           aria-label="Platform overview"
-          className="mt-6 overflow-hidden rounded-xl border border-border bg-card"
+          className="mt-6 overflow-hidden rounded-xl"
         >
           <StatsGrid stats={stats} />
           <DataMetricsSection
             connectionsCoverage={stats.connections_coverage}
             totalUsers={stats.total_users.count}
           />
-        </section>
+        </Card>
 
-        <section
+        <Card
+          role="region"
           aria-label="Providers and recent activity"
-          className="mt-5 grid overflow-hidden rounded-xl border border-border bg-card lg:grid-cols-[minmax(20rem,5fr)_minmax(30rem,7fr)] lg:divide-x lg:divide-border"
+          className="mt-5 grid overflow-hidden rounded-xl lg:grid-cols-[minmax(20rem,5fr)_minmax(30rem,7fr)] lg:divide-x lg:divide-border"
         >
           <ProvidersSection
             providers={stats.connections_coverage.top_providers}
@@ -76,7 +79,7 @@ function DashboardPage() {
             isLoading={isLoadingLastSynced}
             className="border-t border-border lg:border-t-0"
           />
-        </section>
+        </Card>
       </div>
     </div>
   );

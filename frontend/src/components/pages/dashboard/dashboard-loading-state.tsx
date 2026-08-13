@@ -1,3 +1,4 @@
+import { Card } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 
@@ -20,7 +21,7 @@ export function DashboardLoadingState({
         <Skeleton className="mt-3 h-9 w-44" />
         <Skeleton className="mt-2 h-4 w-64" />
 
-        <div className="mt-6 overflow-hidden rounded-xl border border-border bg-card">
+        <Card className="mt-6 overflow-hidden rounded-xl">
           <div className="grid grid-cols-2 sm:grid-cols-4">
             {[1, 2, 3, 4].map((item, index) => (
               <div
@@ -52,9 +53,9 @@ export function DashboardLoadingState({
               <Skeleton className="h-3 w-24" />
             </div>
           </div>
-        </div>
+        </Card>
 
-        <div className="mt-5 grid overflow-hidden rounded-xl border border-border bg-card lg:grid-cols-[5fr_7fr] lg:divide-x lg:divide-border">
+        <Card className="mt-5 grid overflow-hidden rounded-xl lg:grid-cols-[5fr_7fr] lg:divide-x lg:divide-border">
           <div className="h-64 p-6">
             <Skeleton className="h-4 w-20" />
             <Skeleton className="mt-5 h-40 w-full" />
@@ -63,7 +64,7 @@ export function DashboardLoadingState({
             <Skeleton className="h-4 w-28" />
             <Skeleton className="mt-5 h-40 w-full" />
           </div>
-        </div>
+        </Card>
       </div>
     </div>
   );
