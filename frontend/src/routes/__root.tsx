@@ -50,7 +50,10 @@ export const Route = createRootRoute({
       },
       {
         rel: 'stylesheet',
-        href: 'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap',
+        // display=optional pairs with the metric-matched 'Inter Fallback' in
+        // styles.css: the fallback renders in the same footprint, so the text
+        // never resizes when the web font swaps in.
+        href: 'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=optional',
       },
       // Fallback for browsers that don't support media queries
       {

@@ -1,45 +1,16 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from '@tanstack/react-router';
-import {
-  useTable,
-  tableFeatures,
-  rowSortingFeature,
-  rowPaginationFeature,
-  type Column,
-  type ColumnDef,
-  type SortingState,
-  type PaginationState,
-} from '@tanstack/react-table';
-import {
-  Search,
-  Trash2,
-  Copy,
-  Check,
-  ChevronDown,
-  ChevronUp,
-  ChevronsUpDown,
-  Link as LinkIcon,
-  Loader2,
-} from 'lucide-react';
-import { formatDistanceToNow } from 'date-fns';
+import type { SortingState, PaginationState } from '@tanstack/react-table';
+import { Loader2, Search } from 'lucide-react';
 import type { UserRead, UserQueryParams } from '@/lib/api/types';
 import { ROUTES } from '@/lib/constants/routes';
-import { copyToClipboard } from '@/lib/utils/clipboard';
-import { truncateId } from '@/lib/utils/format';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { DataTable } from '@/components/ui/data-table';
+import { DataTablePagination } from '@/components/ui/data-table-pagination';
 import { Input } from '@/components/ui/input';
-import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-  PaginationEllipsis,
-} from '@/components/ui/pagination';
+import { columnToSortBy, createUsersColumns } from '@/components/users/users-columns';
 
 interface UsersTableProps {
   data: UserRead[];
@@ -53,18 +24,6 @@ interface UsersTableProps {
   onQueryChange: (params: UserQueryParams) => void;
 }
 
-const columnToSortBy: Record<string, UserQueryParams['sort_by']> = {
-  created_at: 'created_at',
-  first_name: 'first_name',
-  name: 'first_name',
-  last_synced_at: 'last_synced_at',
-};
-
-const features = tableFeatures({
-  rowSortingFeature,
-  rowPaginationFeature,
-});
-
 export function UsersTable({
   data,
   total,
@@ -76,6 +35,7 @@ export function UsersTable({
   isDeleting,
   onQueryChange,
 }: UsersTableProps) {
+  const navigate = useNavigate();
   const [sorting, setSorting] = useState<SortingState>([
     { id: 'created_at', desc: true },
   ]);
@@ -85,9 +45,7 @@ export function UsersTable({
   });
   const [globalFilter, setGlobalFilter] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
-  const [copiedId, setCopiedId] = useState<string | null>(null);
-  const [copiedPairLink, setCopiedPairLink] = useState<string | null>(null);
-  const navigate = useNavigate();
+
   const onQueryChangeRef = useRef(onQueryChange);
   useEffect(() => {
     onQueryChangeRef.current = onQueryChange;
@@ -125,391 +83,58 @@ export function UsersTable({
     });
   }, [pagination, sorting, debouncedSearch]);
 
-  const handleCopyId = async (id: string) => {
-    const success = await copyToClipboard(id, 'User ID copied to clipboard');
-    if (success) {
-      setCopiedId(id);
-      setTimeout(() => setCopiedId(null), 2000);
-    }
-  };
+  const columns = useMemo(
+    () => createUsersColumns({ onDelete, isDeleting }),
+    [onDelete, isDeleting]
+  );
 
-  const handleCopyPairLink = async (userId: string) => {
-    const pairLink = `${window.location.origin}${ROUTES.users}/${userId}/pair`;
-    const success = await copyToClipboard(
-      pairLink,
-      'Pairing link copied to clipboard'
-    );
-    if (success) {
-      setCopiedPairLink(userId);
-      setTimeout(() => setCopiedPairLink(null), 2000);
-    }
-  };
-
-  const SortableHeader = ({
-    column,
-    children,
-  }: {
-    column: Column<typeof features, UserRead>;
-    children: React.ReactNode;
-  }) => {
-    const isSortable = column.id in columnToSortBy;
-
-    if (!isSortable) {
-      return (
-        <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-          {children}
-        </span>
-      );
-    }
-
-    return (
-      <button
-        className="flex items-center gap-1 text-xs font-medium text-muted-foreground uppercase tracking-wider hover:text-foreground/90 transition-colors"
-        onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-      >
-        {children}
-        {column.getIsSorted() === 'asc' ? (
-          <ChevronUp className="h-3 w-3" />
-        ) : column.getIsSorted() === 'desc' ? (
-          <ChevronDown className="h-3 w-3" />
-        ) : (
-          <ChevronsUpDown className="h-3 w-3 opacity-50" />
-        )}
-      </button>
-    );
-  };
-
-  const columns: ColumnDef<typeof features, UserRead>[] = [
-    {
-      accessorKey: 'id',
-      header: () => (
-        <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-          User ID
-        </span>
-      ),
-      cell: ({ row }) => (
-        <div
-          className="flex items-center gap-2"
-          onClick={(e) => e.stopPropagation()}
-        >
-          <code className="font-mono text-xs bg-muted text-foreground/90 px-2 py-1 rounded">
-            {truncateId(row.original.id)}
-          </code>
-          <Button
-            variant="ghost"
-            size="icon-sm"
-            onClick={() => handleCopyId(row.original.id)}
-          >
-            {copiedId === row.original.id ? (
-              <Check className="h-3 w-3 text-success-muted" />
-            ) : (
-              <Copy className="h-3 w-3" />
-            )}
-          </Button>
-        </div>
-      ),
-      enableSorting: false,
-    },
-    {
-      id: 'name',
-      accessorFn: (row) =>
-        `${row.first_name || ''} ${row.last_name || ''}`.trim(),
-      header: ({ column }) => (
-        <SortableHeader column={column}>Name</SortableHeader>
-      ),
-      cell: ({ row }) => {
-        const fullName =
-          `${row.original.first_name || ''} ${row.original.last_name || ''}`.trim();
-        return (
-          <span
-            className={
-              fullName
-                ? 'text-sm text-foreground/90'
-                : 'text-muted-foreground/70'
-            }
-          >
-            {fullName || '—'}
-          </span>
-        );
-      },
-    },
-    {
-      accessorKey: 'created_at',
-      header: ({ column }) => (
-        <SortableHeader column={column}>Created</SortableHeader>
-      ),
-      cell: ({ row }) => (
-        <span className="text-xs text-muted-foreground">
-          {formatDistanceToNow(new Date(row.original.created_at), {
-            addSuffix: true,
-          })}
-        </span>
-      ),
-    },
-    {
-      accessorKey: 'last_synced_at',
-      header: ({ column }) => (
-        <SortableHeader column={column}>Last Synced</SortableHeader>
-      ),
-      cell: ({ row }) => (
-        <div className="flex items-center gap-1.5">
-          <span className="text-xs text-muted-foreground">
-            {row.original.last_synced_at
-              ? formatDistanceToNow(new Date(row.original.last_synced_at), {
-                  addSuffix: true,
-                })
-              : 'Never'}
-          </span>
-          {row.original.last_synced_provider && (
-            <Badge
-              variant="outline"
-              className="text-[10px] px-1.5 py-0 capitalize"
-            >
-              {row.original.last_synced_provider}
-            </Badge>
-          )}
-        </div>
-      ),
-    },
-    {
-      id: 'actions',
-      header: () => (
-        <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider text-right block">
-          Actions
-        </span>
-      ),
-      cell: ({ row }) => (
-        <div
-          className="flex justify-end gap-1"
-          onClick={(e) => e.stopPropagation()}
-        >
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() => handleCopyPairLink(row.original.id)}
-            title="Copy pairing link"
-          >
-            {copiedPairLink === row.original.id ? (
-              <Check className="h-4 w-4 text-success-muted" />
-            ) : (
-              <LinkIcon className="h-4 w-4" />
-            )}
-          </Button>
-          <Button
-            variant="destructive-outline"
-            size="icon"
-            onClick={() => onDelete(row.original.id)}
-            disabled={isDeleting}
-            title="Delete user"
-          >
-            <Trash2 className="h-4 w-4" />
-          </Button>
-        </div>
-      ),
-      enableSorting: false,
-    },
-  ];
-
-  const table = useTable({
-    features,
-    data,
-    columns,
-    state: {
-      sorting,
-      pagination,
-    },
-    onSortingChange: setSorting,
-    onPaginationChange: setPagination,
-    manualPagination: true,
-    manualSorting: true,
-    pageCount,
-  });
-
-  const currentPage = pagination.pageIndex;
-
-  const getPageNumbers = () => {
-    const pages: (number | 'ellipsis')[] = [];
-    const maxVisible = 5;
-
-    if (pageCount <= maxVisible) {
-      for (let i = 0; i < pageCount; i++) {
-        pages.push(i);
-      }
-    } else {
-      pages.push(0);
-
-      if (currentPage > 2) {
-        pages.push('ellipsis');
-      }
-
-      const start = Math.max(1, currentPage - 1);
-      const end = Math.min(pageCount - 2, currentPage + 1);
-
-      for (let i = start; i <= end; i++) {
-        if (!pages.includes(i)) {
-          pages.push(i);
-        }
-      }
-
-      if (currentPage < pageCount - 3) {
-        pages.push('ellipsis');
-      }
-
-      if (!pages.includes(pageCount - 1)) {
-        pages.push(pageCount - 1);
-      }
-    }
-
-    return pages;
-  };
+  const goToUser = (userId: string) =>
+    navigate({ to: `${ROUTES.users}/$userId`, params: { userId } });
 
   return (
-    <div className="rounded-2xl border border-border/60 bg-gradient-to-br from-card/80 to-card/40 backdrop-blur-xl overflow-hidden">
-      <div className="p-4 border-b border-border/60">
+    <Card className="overflow-hidden rounded-xl">
+      <div className="border-b border-border p-4">
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             type="text"
             placeholder="Search by name or email..."
             value={globalFilter}
             onChange={(e) => setGlobalFilter(e.target.value)}
-            className="bg-card border-border/60 px-9"
+            className="px-9"
           />
           {isLoading && (
-            <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground animate-spin" />
+            <Loader2 className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 animate-spin text-muted-foreground" />
           )}
         </div>
       </div>
 
-      <div className="overflow-x-auto">
-        <table className="w-full">
-          <thead>
-            {table.getHeaderGroups().map((headerGroup) => (
-              <tr
-                key={headerGroup.id}
-                className="border-b border-border/60 text-left"
-              >
-                {headerGroup.headers.map((header) => (
-                  <th key={header.id} className="px-4 py-3">
-                    {header.isPlaceholder ? null : (
-                      <table.FlexRender header={header} />
-                    )}
-                  </th>
-                ))}
-              </tr>
-            ))}
-          </thead>
-          <tbody className="divide-y divide-border/40">
-            {table.getRowModel().rows.length === 0 ? (
-              <tr>
-                <td colSpan={columns.length} className="px-4 py-12 text-center">
-                  <p className="text-muted-foreground">
-                    {globalFilter
-                      ? 'No users match your search criteria.'
-                      : 'No users found'}
-                  </p>
-                </td>
-              </tr>
-            ) : (
-              table.getRowModel().rows.map((row) => (
-                <tr
-                  key={row.id}
-                  role="link"
-                  tabIndex={0}
-                  className="hover:bg-muted/40 transition-colors cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-zinc-500"
-                  onClick={() =>
-                    navigate({
-                      to: `${ROUTES.users}/$userId`,
-                      params: { userId: row.original.id },
-                    })
-                  }
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' || e.key === ' ') {
-                      e.preventDefault();
-                      navigate({
-                        to: `${ROUTES.users}/$userId`,
-                        params: { userId: row.original.id },
-                      });
-                    }
-                  }}
-                >
-                  {row.getAllCells().map((cell) => (
-                    <td key={cell.id} className="px-4 py-3">
-                      <table.FlexRender cell={cell} />
-                    </td>
-                  ))}
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
+      <DataTable
+        columns={columns}
+        data={data}
+        pageCount={pageCount}
+        sorting={sorting}
+        onSortingChange={setSorting}
+        pagination={pagination}
+        onPaginationChange={setPagination}
+        onRowClick={(user) => goToUser(user.id)}
+        emptyMessage={
+          globalFilter
+            ? 'No users match your search criteria.'
+            : 'No users found'
+        }
+      />
 
-      {pageCount > 0 && (
-        <div className="p-4 border-t border-border/60 flex items-center justify-between">
-          <div className="text-sm text-muted-foreground">
-            Showing{' '}
-            <span className="font-medium text-foreground/90">
-              {total === 0 ? 0 : pagination.pageIndex * pagination.pageSize + 1}
-            </span>{' '}
-            to{' '}
-            <span className="font-medium text-foreground/90">
-              {Math.min(
-                (pagination.pageIndex + 1) * pagination.pageSize,
-                total
-              )}
-            </span>{' '}
-            of <span className="font-medium text-foreground/90">{total}</span>{' '}
-            users
-          </div>
-
-          {pageCount > 1 && (
-            <Pagination>
-              <PaginationContent>
-                <PaginationItem>
-                  <PaginationPrevious
-                    onClick={() => table.previousPage()}
-                    className={
-                      !table.getCanPreviousPage()
-                        ? 'pointer-events-none opacity-50'
-                        : 'cursor-pointer'
-                    }
-                  />
-                </PaginationItem>
-
-                {getPageNumbers().map((pageNum, idx) =>
-                  pageNum === 'ellipsis' ? (
-                    <PaginationItem key={`ellipsis-${idx}`}>
-                      <PaginationEllipsis />
-                    </PaginationItem>
-                  ) : (
-                    <PaginationItem key={pageNum}>
-                      <PaginationLink
-                        onClick={() => table.setPageIndex(pageNum)}
-                        isActive={currentPage === pageNum}
-                        className="cursor-pointer"
-                      >
-                        {pageNum + 1}
-                      </PaginationLink>
-                    </PaginationItem>
-                  )
-                )}
-
-                <PaginationItem>
-                  <PaginationNext
-                    onClick={() => table.nextPage()}
-                    className={
-                      !table.getCanNextPage()
-                        ? 'pointer-events-none opacity-50'
-                        : 'cursor-pointer'
-                    }
-                  />
-                </PaginationItem>
-              </PaginationContent>
-            </Pagination>
-          )}
-        </div>
-      )}
-    </div>
+      <DataTablePagination
+        page={pagination.pageIndex}
+        pageCount={pageCount}
+        pageSize={pagination.pageSize}
+        total={total}
+        onPageChange={(pageIndex) =>
+          setPagination((prev) => ({ ...prev, pageIndex }))
+        }
+        itemLabel="users"
+      />
+    </Card>
   );
 }

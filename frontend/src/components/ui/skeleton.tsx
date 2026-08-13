@@ -6,13 +6,7 @@ function Skeleton({
 }: React.HTMLAttributes<HTMLDivElement>) {
   return (
     <div
-      className={cn(
-        'rounded-md bg-muted relative overflow-hidden',
-        'before:absolute before:inset-0',
-        'before:bg-gradient-to-r before:from-transparent before:via-primary/10 before:to-transparent',
-        'before:animate-shimmer',
-        className
-      )}
+      className={cn('animate-pulse rounded-md bg-muted', className)}
       {...props}
     />
   );

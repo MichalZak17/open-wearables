@@ -4,7 +4,9 @@ import { Plus, Users as UsersIcon } from 'lucide-react';
 import { useUsers, useDeleteUser, useCreateUser } from '@/hooks/api/use-users';
 import type { UserCreate, UserQueryParams } from '@/lib/api/types';
 import { UsersTable } from '@/components/users/users-table';
+import { UsersTableSkeleton } from '@/components/users/users-table-skeleton';
 import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { PageHeader } from '@/components/ui/page-header';
@@ -113,16 +115,7 @@ function UsersPage() {
     return (
       <div className="p-6 md:p-8 space-y-6">
         <PageHeader title="Users" description="Manage your platform users" />
-        <div className="rounded-2xl border border-border/60 bg-gradient-to-br from-card/80 to-card/40 p-6 backdrop-blur-xl">
-          <div className="animate-pulse space-y-4">
-            <div className="h-10 bg-muted/60 rounded-md w-full" />
-            <div className="space-y-3">
-              {[1, 2, 3, 4, 5].map((i) => (
-                <div key={i} className="h-16 bg-muted/40 rounded-md" />
-              ))}
-            </div>
-          </div>
-        </div>
+        <UsersTableSkeleton rows={DEFAULT_PAGE_SIZE} />
       </div>
     );
   }
@@ -130,12 +123,12 @@ function UsersPage() {
   if (error) {
     return (
       <div className="p-6 md:p-8">
-        <div className="rounded-2xl border border-border/60 bg-gradient-to-br from-card/80 to-card/40 p-8 text-center backdrop-blur-xl">
+        <Card className="rounded-xl p-8 text-center">
           <p className="text-muted-foreground mb-4">
             Failed to load users. Please try again.
           </p>
           <Button onClick={() => refetch()}>Retry</Button>
-        </div>
+        </Card>
       </div>
     );
   }
@@ -170,8 +163,8 @@ function UsersPage() {
           onQueryChange={handleQueryChange}
         />
       ) : (
-        <div className="rounded-2xl border border-border/60 bg-gradient-to-br from-card/80 to-card/40 p-12 text-center backdrop-blur-xl">
-          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-2xl border border-border/60 bg-muted/40">
+        <Card className="rounded-xl p-12 text-center">
+          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-2xl border border-border bg-muted/40">
             <UsersIcon className="h-6 w-6 text-muted-foreground" />
           </div>
           <p className="text-muted-foreground mb-2">No users found</p>
@@ -183,7 +176,7 @@ function UsersPage() {
             <Plus className="h-4 w-4" />
             Create First User
           </Button>
-        </div>
+        </Card>
       )}
 
       <Dialog

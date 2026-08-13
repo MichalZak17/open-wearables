@@ -11,17 +11,15 @@ export function DashboardLoadingState({
 }: DashboardLoadingStateProps) {
   return (
     <div
-      className={cn('min-h-full px-4 py-7 sm:px-6 sm:py-8 lg:px-10', className)}
+      className={cn('space-y-6 p-6 md:p-8', className)}
+      aria-label="Loading dashboard"
     >
-      <div
-        className="mx-auto w-full max-w-[96rem]"
-        aria-label="Loading dashboard"
-      >
-        <Skeleton className="h-6 w-14 rounded-full" />
-        <Skeleton className="mt-3 h-9 w-44" />
+      <div>
+        <Skeleton className="h-9 w-44 md:h-10" />
         <Skeleton className="mt-2 h-4 w-64" />
+      </div>
 
-        <Card className="mt-6 overflow-hidden rounded-xl">
+      <Card className="overflow-hidden rounded-xl">
           <div className="grid grid-cols-2 sm:grid-cols-4">
             {[1, 2, 3, 4].map((item, index) => (
               <div
@@ -55,17 +53,20 @@ export function DashboardLoadingState({
           </div>
         </Card>
 
-        <Card className="mt-5 grid overflow-hidden rounded-xl lg:grid-cols-[5fr_7fr] lg:divide-x lg:divide-border">
-          <div className="h-64 p-6">
-            <Skeleton className="h-4 w-20" />
-            <Skeleton className="mt-5 h-40 w-full" />
-          </div>
-          <div className="h-64 border-t border-border p-6 lg:border-t-0">
-            <Skeleton className="h-4 w-28" />
-            <Skeleton className="mt-5 h-40 w-full" />
-          </div>
-        </Card>
-      </div>
+        <div className="grid gap-6 lg:grid-cols-3">
+          <Card className="overflow-hidden rounded-xl lg:col-span-1">
+            <div className="h-64 p-6">
+              <Skeleton className="h-4 w-20" />
+              <Skeleton className="mt-5 h-40 w-full" />
+            </div>
+          </Card>
+          <Card className="overflow-hidden rounded-xl lg:col-span-2">
+            <div className="h-64 p-6">
+              <Skeleton className="h-4 w-28" />
+              <Skeleton className="mt-5 h-40 w-full" />
+            </div>
+          </Card>
+        </div>
     </div>
   );
 }
