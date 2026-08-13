@@ -14,6 +14,7 @@ import {
   AlertTriangle,
   TrendingUp,
 } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { EarlyAccessBanner } from '@/components/ui/early-access-banner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -316,18 +317,18 @@ export function DataLifecycleTab() {
 
       {/* Policy Warning */}
       {policyWarning && (
-        <div className="flex items-center gap-2 text-warning-muted bg-warning-muted/10 border border-warning-muted/20 rounded-lg px-4 py-3 text-sm">
-          <AlertTriangle className="h-4 w-4 shrink-0" />
-          {policyWarning}
-        </div>
+        <Alert variant="warning">
+          <AlertTriangle className="h-4 w-4" />
+          <AlertDescription>{policyWarning}</AlertDescription>
+        </Alert>
       )}
 
       {/* Validation Error */}
       {validationError && (
-        <div className="flex items-center gap-2 text-warning-muted bg-warning-muted/10 border border-warning-muted/20 rounded-lg px-4 py-3 text-sm">
-          <AlertTriangle className="h-4 w-4 shrink-0" />
-          {validationError}
-        </div>
+        <Alert variant="warning">
+          <AlertTriangle className="h-4 w-4" />
+          <AlertDescription>{validationError}</AlertDescription>
+        </Alert>
       )}
 
       {/* Manual Trigger */}
