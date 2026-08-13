@@ -23,16 +23,20 @@
 
 @layer base {
   :root {
-    /* === GRAPHITE SURFACES (cool-tinted near-black) === */
-    --background: 220 16% 4%; /* page canvas */
-    --background-elevated: 220 14% 7%;
+    /* === GRAPHITE SURFACES (cool-tinted near-black) ===
+       Elevation reads through LIGHTNESS: each layer steps a visible ~3-4%
+       off the canvas so cards, popovers and inputs feel stacked rather than
+       painted onto one flat sheet. Saturation is nudged up slightly (13-20%)
+       so the graphite reads as a cool material, not dead grey. */
+    --background: 224 20% 5%; /* page canvas (deepest) */
+    --background-elevated: 222 18% 9%;
     --foreground: 220 15% 98%;
 
-    --card: 220 15% 5%;
-    --card-elevated: 220 12% 15%;
+    --card: 222 17% 9%; /* lifts clearly off the 5% canvas */
+    --card-elevated: 220 14% 17%;
     --card-foreground: 220 15% 98%;
 
-    --popover: 220 14% 8%;
+    --popover: 222 18% 11%;
     --popover-foreground: 220 15% 98%;
 
     /* === PRIMARY - NEUTRAL (near-white, cool) === */
@@ -43,20 +47,20 @@
     --primary-foreground: 220 20% 5%;
 
     /* === NEUTRAL INTERACTIVE SURFACES === */
-    --secondary: 220 12% 15%;
-    --secondary-hover: 220 12% 21%;
+    --secondary: 220 14% 16%;
+    --secondary-hover: 220 13% 22%;
     --secondary-muted: 220 10% 64%;
     --secondary-glow: 220 10% 83%;
     --secondary-foreground: 220 15% 98%;
 
-    --accent: 220 12% 15%;
-    --accent-hover: 220 12% 21%;
+    --accent: 220 14% 16%;
+    --accent-hover: 220 13% 22%;
     --accent-muted: 220 10% 74%;
     --accent-glow: 220 12% 90%;
     --accent-foreground: 220 15% 98%;
 
     /* === MUTED/NEUTRAL === */
-    --muted: 220 12% 15%;
+    --muted: 220 14% 16%;
     --muted-foreground: 220 10% 65%;
     --foreground-muted: 220 12% 83%;
     --foreground-subtle: 220 8% 48%;
@@ -78,21 +82,21 @@
     --destructive-foreground: 0 0% 4%; /* #0A0A0A */
 
     /* === BORDERS & INPUTS === */
-    --border: 220 13% 20%;
-    --border-hover: 220 12% 28%;
+    --border: 222 15% 22%;
+    --border-hover: 220 13% 30%;
     --border-glow: 220 10% 45%;
-    --input: 220 15% 6%;
-    --ring: 220 12% 83%;
+    --input: 222 18% 10%;
+    --ring: 233 90% 77%; /* indigo focus ring */
 
-    /* === SIDEBAR (slightly elevated chrome) === */
-    --sidebar: 220 14% 7%;
+    /* === SIDEBAR (recedes below the cards it frames) === */
+    --sidebar: 224 19% 7%;
     --sidebar-foreground: 220 14% 92%;
     --sidebar-primary: 220 15% 96%;
     --sidebar-primary-foreground: 220 20% 5%;
-    --sidebar-accent: 220 12% 16%;
+    --sidebar-accent: 220 14% 16%; /* hover + active surface */
     --sidebar-accent-foreground: 220 15% 98%;
-    --sidebar-border: 220 12% 18%;
-    --sidebar-ring: 220 12% 83%;
+    --sidebar-border: 222 15% 18%;
+    --sidebar-ring: 233 90% 77%;
 
     /* === CHART COLORS === */
     --chart-1: 234 89% 74%; /* Indigo 400 */
@@ -174,7 +178,7 @@
     --border-hover: 0 0% 78%;
     --border-glow: 220 12% 55%;
     --input: 0 0% 100%;
-    --ring: 220 25% 32%;
+    --ring: 233 74% 56%; /* indigo focus ring */
 
     /* The sidebar is a true-white navigation surface, separated by one line. */
     --sidebar: 0 0% 100%;
@@ -184,7 +188,7 @@
     --sidebar-accent: 0 0% 96%;
     --sidebar-accent-foreground: 220 25% 12%;
     --sidebar-border: 0 0% 89%;
-    --sidebar-ring: 220 25% 32%;
+    --sidebar-ring: 233 74% 56%;
 
     --chart-1: 239 84% 67%; /* Indigo 500 */
     --chart-2: 173 80% 40%; /* Teal 500 */
