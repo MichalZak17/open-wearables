@@ -37,7 +37,10 @@ import { BodySection } from '@/components/user/body-section';
 import { WorkoutSection } from '@/components/user/workout-section';
 import { ScoresSection } from '@/components/user/scores-section';
 import { WomensHealthSection } from '@/components/user/womens-health-section';
-import type { DateRangeValue } from '@/components/ui/date-range-selector';
+import {
+  presetPeriod,
+  type PeriodValue,
+} from '@/components/ui/date-range-selector';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -56,6 +59,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import {
@@ -92,13 +96,20 @@ function UserDetailPage() {
   const [activeTab, setActiveTab] = useState('profile');
 
   // Date range states for different sections
-  const [workoutDateRange, setWorkoutDateRange] = useState<DateRangeValue>(30);
-  const [activityDateRange, setActivityDateRange] =
-    useState<DateRangeValue>(30);
-  const [sleepDateRange, setSleepDateRange] = useState<DateRangeValue>(30);
-  const [scoresDateRange, setScoresDateRange] = useState<DateRangeValue>(30);
+  const [workoutDateRange, setWorkoutDateRange] = useState<PeriodValue>(
+    presetPeriod(30)
+  );
+  const [activityDateRange, setActivityDateRange] = useState<PeriodValue>(
+    presetPeriod(30)
+  );
+  const [sleepDateRange, setSleepDateRange] = useState<PeriodValue>(
+    presetPeriod(30)
+  );
+  const [scoresDateRange, setScoresDateRange] = useState<PeriodValue>(
+    presetPeriod(30)
+  );
   const [womensHealthDateRange, setWomensHealthDateRange] =
-    useState<DateRangeValue>(90);
+    useState<PeriodValue>(presetPeriod(90));
 
   const { mutate: deleteUser, isPending: isDeleting } = useDeleteUser();
   const { handleUpload, isUploading: isUploadingFile } = useAppleXmlUpload();
@@ -252,7 +263,7 @@ function UserDetailPage() {
   if (!userLoading && !user) {
     return (
       <div className="p-8">
-        <div className="rounded-2xl border border-border/60 bg-gradient-to-br from-card/80 to-card/40 backdrop-blur-xl p-12 text-center">
+        <Card className="p-12 text-center">
           <p className="text-muted-foreground">User not found</p>
           <Button variant="outline" className="mt-4" asChild>
             <Link to={ROUTES.users}>
@@ -260,7 +271,7 @@ function UserDetailPage() {
               Back to Users
             </Link>
           </Button>
-        </div>
+        </Card>
       </div>
     );
   }
@@ -295,7 +306,11 @@ function UserDetailPage() {
           )}
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="secondary" onClick={handleCopyPairLink}>
+          <Button
+            variant="secondary"
+            className="hover:bg-border hover:text-foreground"
+            onClick={handleCopyPairLink}
+          >
             {copied ? (
               <>
                 <Check className="h-4 w-4 text-success-muted" />
@@ -312,6 +327,7 @@ function UserDetailPage() {
             <TooltipTrigger asChild>
               <Button
                 variant="secondary"
+                className="hover:bg-border hover:text-foreground"
                 onClick={handleGenerateInvitationCode}
                 disabled={isGeneratingCode}
               >
@@ -349,6 +365,7 @@ function UserDetailPage() {
                   variant="secondary"
                   size="icon"
                   aria-label="More user actions"
+                  className="hover:bg-border hover:text-foreground"
                 >
                   <Ellipsis className="h-4 w-4" />
                 </Button>
@@ -399,7 +416,7 @@ function UserDetailPage() {
       </div>
 
       {/* Tabs */}
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
+      <Tabs value={activeTab} onValueChange={setActiveTab} variant="underline">
         <TabsList>
           {tabs.map((tab) => (
             <TabsTrigger key={tab.id} value={tab.id} className="gap-2">

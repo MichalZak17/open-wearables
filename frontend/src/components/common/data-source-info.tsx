@@ -11,8 +11,6 @@ import {
 import { cn } from '@/lib/utils';
 import type { SourceMetadata } from '@/lib/api/types';
 
-const UNKNOWN_DEVICE = '???';
-
 export function DataSourceInfo({
   source,
   className = '',
@@ -23,7 +21,23 @@ export function DataSourceInfo({
   if (!source) return null;
 
   const { label: deviceTypeLabel } = deviceTypeInfo(source.device_type);
-  const deviceName = source.device_name ?? UNKNOWN_DEVICE;
+  const hasKnownType =
+    Boolean(source.device_type) && source.device_type !== 'unknown';
+
+  // Prefer an explicit device name; fall back to the device-type label
+  // (e.g. "Watch") and finally to a muted "Unknown device" placeholder rather
+  // than surfacing a raw "???" to the user.
+  const deviceName =
+    source.device_name ?? (hasKnownType ? deviceTypeLabel : null);
+  const isUnknownDevice = !deviceName;
+  const deviceDisplay = deviceName ?? 'Unknown device';
+
+  const deviceTooltip = source.device_name
+    ? `${deviceTypeLabel}: ${source.device_name}`
+    : hasKnownType
+      ? deviceTypeLabel
+      : 'Device not reported';
+
   // Native API integrations store the provider key as the source ("garmin"/"garmin"),
   // so it only carries information for HealthKit / Health Connect writers.
   const showSource =
@@ -58,20 +72,25 @@ export function DataSourceInfo({
 
       <Tooltip>
         <TooltipTrigger asChild>
-          <span className="flex min-w-0 items-center gap-1 text-[10px] text-muted-foreground">
+          <span
+            className={cn(
+              'flex min-w-0 items-center gap-1 text-[10px] text-muted-foreground',
+              isUnknownDevice && 'text-muted-foreground/60'
+            )}
+          >
             <DeviceTypeIcon
               deviceType={source.device_type}
               className="h-3 w-3 shrink-0"
             />
-            <span className="truncate">{deviceName}</span>
+            <span className={cn('truncate', isUnknownDevice && 'italic')}>
+              {deviceDisplay}
+            </span>
           </span>
         </TooltipTrigger>
         <TooltipContent>
           <div className="space-y-0.5">
-            <div>
-              {deviceTypeLabel}: {deviceName}
-            </div>
-            {source.device && source.device !== deviceName && (
+            <div>{deviceTooltip}</div>
+            {source.device && source.device !== deviceDisplay && (
               <div className="text-muted-foreground">
                 Model: {source.device}
               </div>

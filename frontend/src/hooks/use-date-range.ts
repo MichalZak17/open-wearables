@@ -1,20 +1,30 @@
 import { useMemo } from 'react';
-import { addDays, subDays, startOfDay, getUnixTime } from 'date-fns';
-import type { DateRangeValue } from '@/components/ui/date-range-selector';
-
-interface DateRange {
-  startDate: string;
-  endDate: string;
-}
+import {
+  addDays,
+  format,
+  parseISO,
+  subDays,
+  startOfDay,
+  getUnixTime,
+} from 'date-fns';
+import type { PeriodValue } from '@/components/ui/date-range-selector';
 
 interface DateRangeParams {
   start_date: string;
   end_date: string;
 }
 
-interface DateRangeDates {
+/**
+ * A period resolved to a concrete half-open interval `[startDate, endDate)`.
+ * Provides both ISO strings (for API params) and Date objects (for formatting
+ * or unix-timestamp conversion), plus the window length in days.
+ */
+interface ResolvedPeriod {
   startDate: Date;
-  endDate: Date;
+  endDate: Date; // exclusive
+  startIso: string;
+  endIso: string; // exclusive
+  days: number;
 }
 
 /**
@@ -28,43 +38,41 @@ function toUTCMidnight(date: Date): Date {
   );
 }
 
+const DAY_MS = 86_400_000;
+
 /**
- * Hook to calculate date range from a DateRangeValue (number of days).
- * Returns ISO date strings for API calls.
+ * Resolve a {@link PeriodValue} (preset or custom span) to a concrete half-open
+ * interval `[startDate, endDate)` in UTC.
  *
- * Uses half-open interval [start, end) where:
- * - start = beginning of the first day (N days ago) in UTC
- * - end = beginning of tomorrow (to include today's data) in UTC
+ * - Preset: start = UTC midnight N days ago, end = UTC midnight tomorrow
+ *   (exclusive, so today's data is included).
+ * - Custom: `from`/`to` are inclusive `yyyy-MM-dd` days; end is UTC midnight of
+ *   the day after `to`.
  */
-export function useDateRange(dateRange: DateRangeValue): DateRange {
+export function usePeriodRange(period: PeriodValue): ResolvedPeriod {
   return useMemo(() => {
-    const today = startOfDay(new Date());
+    if (period.type === 'preset') {
+      const today = startOfDay(new Date());
+      const start = toUTCMidnight(subDays(today, period.days));
+      const end = toUTCMidnight(addDays(today, 1));
+      return {
+        startDate: start,
+        endDate: end,
+        startIso: start.toISOString(),
+        endIso: end.toISOString(),
+        days: period.days,
+      };
+    }
 
-    // End date: start of tomorrow UTC (exclusive, for half-open interval)
-    const end = toUTCMidnight(addDays(today, 1));
-
-    // Start date: start of day N days ago in UTC
-    const start = toUTCMidnight(subDays(today, dateRange));
-
-    return {
-      startDate: start.toISOString(),
-      endDate: end.toISOString(),
-    };
-  }, [dateRange]);
-}
-
-/**
- * Hook to calculate date range from a DateRangeValue (number of days).
- * Returns Date objects for flexible formatting (local time).
- */
-export function useDateRangeDates(dateRange: DateRangeValue): DateRangeDates {
-  return useMemo(() => {
-    const today = startOfDay(new Date());
-    return {
-      startDate: subDays(today, dateRange),
-      endDate: today,
-    };
-  }, [dateRange]);
+    // Custom inclusive [from, to] → half-open [from, day-after-to) in UTC.
+    const startIso = `${period.from}T00:00:00.000Z`;
+    const endDay = format(addDays(parseISO(period.to), 1), 'yyyy-MM-dd');
+    const endIso = `${endDay}T00:00:00.000Z`;
+    const start = new Date(startIso);
+    const end = new Date(endIso);
+    const days = Math.max(1, Math.round((end.getTime() - start.getTime()) / DAY_MS));
+    return { startDate: start, endDate: end, startIso, endIso, days };
+  }, [period]);
 }
 
 /**

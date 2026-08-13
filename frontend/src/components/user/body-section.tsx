@@ -11,6 +11,7 @@ import {
   type LucideIcon,
 } from 'lucide-react';
 import { useBodySummary } from '@/hooks/api/use-health';
+import { Card } from '@/components/ui/card';
 import { DataSourceInfo } from '@/components/common/data-source-info';
 import {
   formatWeight,
@@ -171,7 +172,7 @@ export function BodySection({ userId }: BodySectionProps) {
         : 'HRV (ms)';
 
   return (
-    <div className="rounded-2xl border border-border/60 bg-gradient-to-br from-card/80 to-card/40 backdrop-blur-xl overflow-hidden">
+    <Card className="overflow-hidden">
       <div className="px-6 py-4 border-b border-border/60 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <h3 className="text-sm font-medium text-foreground">Body Metrics</h3>
@@ -305,6 +306,6 @@ export function BodySection({ userId }: BodySectionProps) {
           </div>
         )}
       </div>
-    </div>
+    </Card>
   );
 }

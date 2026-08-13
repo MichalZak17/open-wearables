@@ -15,8 +15,9 @@ import {
   type LucideIcon,
 } from 'lucide-react';
 import { useHealthScores } from '@/hooks/api/use-health';
-import { useDateRange } from '@/hooks/use-date-range';
-import type { DateRangeValue } from '@/components/ui/date-range-selector';
+import { usePeriodRange } from '@/hooks/use-date-range';
+import type { PeriodValue } from '@/components/ui/date-range-selector';
+import { Card } from '@/components/ui/card';
 import { SourceBadge } from '@/components/common/source-badge';
 import { SectionHeader } from '@/components/common/section-header';
 import {
@@ -413,8 +414,8 @@ function ScoresSkeleton() {
 
 interface ScoresSectionProps {
   userId: string;
-  dateRange: DateRangeValue;
-  onDateRangeChange: (value: DateRangeValue) => void;
+  dateRange: PeriodValue;
+  onDateRangeChange: (value: PeriodValue) => void;
 }
 
 export function ScoresSection({
@@ -422,12 +423,12 @@ export function ScoresSection({
   dateRange,
   onDateRangeChange,
 }: ScoresSectionProps) {
-  const { startDate, endDate } = useDateRange(dateRange);
+  const { startIso, endIso } = usePeriodRange(dateRange);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
 
   const { data: scoresData, isLoading } = useHealthScores(userId, {
-    start_date: startDate,
-    end_date: endDate,
+    start_date: startIso,
+    end_date: endIso,
     limit: 1000,
   });
 
@@ -486,7 +487,7 @@ export function ScoresSection({
   return (
     <div className="space-y-6">
       {/* Summary + Chart Section */}
-      <div className="rounded-2xl border border-border/60 bg-gradient-to-br from-card/80 to-card/40 backdrop-blur-xl overflow-hidden">
+      <Card className="overflow-hidden">
         <SectionHeader
           title="Health Scores"
           dateRange={dateRange}
@@ -629,11 +630,11 @@ export function ScoresSection({
             </div>
           )}
         </div>
-      </div>
+      </Card>
 
       {/* Daily Scores */}
       {!isLoading && dailyScores.length > 0 && (
-        <div className="rounded-2xl border border-border/60 bg-gradient-to-br from-card/80 to-card/40 backdrop-blur-xl overflow-hidden">
+        <Card className="overflow-hidden">
           <SectionHeader title="Daily Scores" />
           <div className="p-6">
             <div className="space-y-3">
@@ -642,7 +643,7 @@ export function ScoresSection({
               ))}
             </div>
           </div>
-        </div>
+        </Card>
       )}
     </div>
   );

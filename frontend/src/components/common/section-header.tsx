@@ -1,12 +1,12 @@
 import {
   DateRangeSelector,
-  type DateRangeValue,
+  type PeriodValue,
 } from '@/components/ui/date-range-selector';
 
 interface SectionHeaderProps {
   title: string;
-  dateRange?: DateRangeValue;
-  onDateRangeChange?: (value: DateRangeValue) => void;
+  dateRange?: PeriodValue;
+  onDateRangeChange?: (value: PeriodValue) => void;
   rightContent?: React.ReactNode;
 }
 

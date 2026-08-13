@@ -19,9 +19,9 @@ export const Route = createFileRoute('/_authenticated')({
 
 function AuthenticatedLayout() {
   return (
-    <div className="flex min-h-svh w-full flex-col bg-background md:flex-row">
+    <div className="flex min-h-svh w-full flex-col bg-background md:h-svh md:flex-row md:overflow-hidden">
       <Sidebar />
-      <main className="min-w-0 flex-1 bg-background md:h-svh md:overflow-y-auto">
+      <main className="relative min-w-0 flex-1 bg-background md:h-svh md:overflow-y-auto md:[scrollbar-gutter:stable]">
         <Outlet />
       </main>
     </div>

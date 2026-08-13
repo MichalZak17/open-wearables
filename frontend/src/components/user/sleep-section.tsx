@@ -25,8 +25,9 @@ import {
   useDeleteSleepSession,
 } from '@/hooks/api/use-health';
 import { useCursorPagination } from '@/hooks/use-cursor-pagination';
-import { useDateRange, useAllTimeRange } from '@/hooks/use-date-range';
-import type { DateRangeValue } from '@/components/ui/date-range-selector';
+import { usePeriodRange, useAllTimeRange } from '@/hooks/use-date-range';
+import type { PeriodValue } from '@/components/ui/date-range-selector';
+import { Card } from '@/components/ui/card';
 import { CursorPagination } from '@/components/common/cursor-pagination';
 import { MetricCard } from '@/components/common/metric-card';
 import { DataSourceInfo } from '@/components/common/data-source-info';
@@ -69,8 +70,8 @@ import { EventDeleteDialog } from '@/components/common/event-delete-dialog';
 
 interface SleepSectionProps {
   userId: string;
-  dateRange: DateRangeValue;
-  onDateRangeChange: (value: DateRangeValue) => void;
+  dateRange: PeriodValue;
+  onDateRangeChange: (value: PeriodValue) => void;
 }
 
 const SESSIONS_PER_PAGE = 10;
@@ -515,15 +516,15 @@ export function SleepSection({
   const [deduplicate, setDeduplicate] = useState(true);
 
   // Date range hooks
-  const { startDate, endDate } = useDateRange(dateRange);
+  const { startIso, endIso } = usePeriodRange(dateRange);
   const allTimeRange = useAllTimeRange();
 
   // Fetch sleep summaries for summary stats (date range filtered)
   const { data: sleepSummaries, isLoading: summaryLoading } = useSleepSummaries(
     userId,
     {
-      start_date: startDate,
-      end_date: endDate,
+      start_date: startIso,
+      end_date: endIso,
       limit: 100,
     }
   );
@@ -590,7 +591,7 @@ export function SleepSection({
   return (
     <div className="space-y-6">
       {/* Summary Section */}
-      <div className="rounded-2xl border border-border/60 bg-gradient-to-br from-card/80 to-card/40 backdrop-blur-xl overflow-hidden">
+      <Card className="overflow-hidden">
         <SectionHeader
           title="Sleep Summary"
           dateRange={dateRange}
@@ -749,10 +750,10 @@ export function SleepSection({
             </div>
           )}
         </div>
-      </div>
+      </Card>
 
       {/* Sleep Sessions Section */}
-      <div className="rounded-2xl border border-border/60 bg-gradient-to-br from-card/80 to-card/40 backdrop-blur-xl overflow-hidden">
+      <Card className="overflow-hidden">
         <SectionHeader
           title="Sleep Sessions"
           rightContent={
@@ -806,7 +807,7 @@ export function SleepSection({
             </div>
           )}
         </div>
-      </div>
+      </Card>
     </div>
   );
 }

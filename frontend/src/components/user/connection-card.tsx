@@ -326,6 +326,23 @@ function ConnectionCardComponent({
         .map(([type, v]) => ({ type, failedCount: v.failed }))
     : [];
 
+  // Whether the card body has anything to render. When a connection is revoked
+  // or expired, most sections are hidden — skip CardContent entirely so the card
+  // doesn't leave empty padding below the header.
+  const hasCardContent =
+    (isBackfillInProgress && !!backfillStatus) ||
+    isBackfillCancelled ||
+    isPermanentlyFailed ||
+    timedOutTypes.length > 0 ||
+    failedTypes.length > 0 ||
+    connection.status === 'active' ||
+    !!activeSync ||
+    (recentRuns?.length ?? 0) > 0;
+
+  // Revoked/expired connections are de-emphasized so active ones stand out.
+  const isInactive =
+    connection.status === 'revoked' || connection.status === 'expired';
+
   const renderStatusBadge = (status: string) => {
     switch (status) {
       case 'active':
@@ -355,11 +372,17 @@ function ConnectionCardComponent({
   };
 
   return (
-    <Card className={cn('relative', className)}>
+    <Card
+      className={cn(
+        'relative transition-all duration-200 hover:border-border hover:shadow-md',
+        className
+      )}
+    >
       <CardHeader className="pb-4">
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-3">
-            <div className="h-14 w-14 rounded-full bg-white flex items-center justify-center overflow-hidden p-2">
+            <div className="flex h-16 w-16 items-center justify-center overflow-hidden rounded-xl border border-border/60 bg-white p-2 shadow-sm ring-1 ring-black/5">
+              {/* White chip keeps dark provider logos legible in both themes. */}
               {iconUrl && !imageError ? (
                 <img
                   src={iconUrl}
@@ -368,16 +391,21 @@ function ConnectionCardComponent({
                   onError={() => setImageError(true)}
                 />
               ) : (
-                <span className="text-lg font-medium text-black">
+                <span className="text-xl font-medium text-black">
                   {displayName.charAt(0).toUpperCase()}
                 </span>
               )}
             </div>
-            <div>
-              <h3 className="font-semibold text-card-foreground text-lg">
+            <div className="min-w-0">
+              <h3
+                className={cn(
+                  'text-lg font-semibold',
+                  isInactive ? 'text-muted-foreground' : 'text-card-foreground'
+                )}
+              >
                 {displayName}
               </h3>
-              <p className="text-sm text-muted-foreground mt-0.5">
+              <p className="mt-0.5 text-sm text-foreground/70">
                 Last live sync:{' '}
                 {connection.last_synced_at
                   ? formatDistanceToNow(new Date(connection.last_synced_at), {
@@ -386,7 +414,7 @@ function ConnectionCardComponent({
                   : 'Never'}
               </p>
               {(connection.live_sync_mode || scopeItems.length > 0) && (
-                <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
+                <div className="mt-2 flex flex-wrap items-center gap-1.5">
                   {connection.live_sync_mode &&
                     (connection.live_sync_mode === 'webhook' ? (
                       <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
@@ -412,16 +440,16 @@ function ConnectionCardComponent({
                         align="start"
                         sideOffset={6}
                         hideArrow
-                        className="max-w-xs bg-zinc-900 border border-zinc-700 shadow-xl"
+                        className="max-w-xs"
                       >
-                        <p className="text-[10px] font-medium text-zinc-500 mb-1.5 uppercase tracking-wide">
+                        <p className="text-[10px] font-medium text-muted-foreground mb-1.5 uppercase tracking-wide">
                           Granted permissions
                         </p>
                         <div className="flex flex-wrap gap-1">
                           {scopeItems.map((s) => (
                             <span
                               key={s}
-                              className="inline-flex px-1.5 py-0.5 rounded text-[11px] font-medium bg-zinc-800 text-zinc-200 border border-zinc-700"
+                              className="inline-flex px-1.5 py-0.5 rounded text-[11px] font-medium bg-muted text-foreground border border-border"
                             >
                               {formatScopeChip(s)}
                             </span>
@@ -446,9 +474,9 @@ function ConnectionCardComponent({
                           align="start"
                           sideOffset={6}
                           hideArrow
-                          className="max-w-xs bg-zinc-900 border border-zinc-700 shadow-xl"
+                          className="max-w-xs"
                         >
-                          <p className="text-[10px] font-medium text-zinc-500 mb-1.5 uppercase tracking-wide">
+                          <p className="text-[10px] font-medium text-muted-foreground mb-1.5 uppercase tracking-wide">
                             Other linked OW accounts
                           </p>
                           <div className="flex flex-wrap gap-1">
@@ -457,7 +485,7 @@ function ConnectionCardComponent({
                                 key={uid}
                                 to="/users/$userId"
                                 params={{ userId: uid }}
-                                className="inline-flex px-1.5 py-0.5 rounded text-[11px] font-mono font-medium bg-zinc-800 text-zinc-200 border border-zinc-700 hover:bg-zinc-700 hover:text-white transition-colors"
+                                className="inline-flex px-1.5 py-0.5 rounded text-[11px] font-mono font-medium bg-muted text-foreground border border-border hover:bg-muted-foreground/20 hover:text-foreground transition-colors"
                               >
                                 {uid.slice(0, 8)}
                               </Link>
@@ -550,279 +578,285 @@ function ConnectionCardComponent({
         </div>
       </CardHeader>
 
-      <CardContent className="space-y-4">
-        {/* Show backfill progress for Garmin */}
-        {isBackfillInProgress && backfillStatus && (
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-                {isRetryPhase && backfillStatus.retry_type ? (
-                  <span className="text-sm text-muted-foreground">
-                    Retrying {formatTypeName(backfillStatus.retry_type)}{' '}
-                    {backfillStatus.retry_window !== null && (
-                      <span>(window {backfillStatus.retry_window + 1})...</span>
-                    )}
-                  </span>
-                ) : (
-                  <span className="text-sm text-muted-foreground">
-                    Fetching historical data...{' '}
-                    <span className="font-medium">
-                      {backfillStatus.current_window} of{' '}
-                      {backfillStatus.total_windows} windows complete
+      {hasCardContent && (
+        <CardContent className="space-y-4">
+          {/* Show backfill progress for Garmin */}
+          {isBackfillInProgress && backfillStatus && (
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                  {isRetryPhase && backfillStatus.retry_type ? (
+                    <span className="text-sm text-muted-foreground">
+                      Retrying {formatTypeName(backfillStatus.retry_type)}{' '}
+                      {backfillStatus.retry_window !== null && (
+                        <span>
+                          (window {backfillStatus.retry_window + 1})...
+                        </span>
+                      )}
                     </span>
-                  </span>
-                )}
+                  ) : (
+                    <span className="text-sm text-muted-foreground">
+                      Fetching historical data...{' '}
+                      <span className="font-medium">
+                        {backfillStatus.current_window} of{' '}
+                        {backfillStatus.total_windows} windows complete
+                      </span>
+                    </span>
+                  )}
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 px-2 text-xs"
+                  onClick={() => cancelBackfill()}
+                  disabled={isCancelling}
+                >
+                  <XCircle className="h-3 w-3 mr-1" />
+                  Cancel
+                </Button>
               </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-7 px-2 text-xs"
-                onClick={() => cancelBackfill()}
-                disabled={isCancelling}
-              >
-                <XCircle className="h-3 w-3 mr-1" />
-                Cancel
-              </Button>
+              {/* Progress bar */}
+              <div className="h-1.5 bg-muted rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-primary transition-all duration-300"
+                  style={{
+                    width: `${backfillStatus.total_windows > 0 ? (backfillStatus.current_window / backfillStatus.total_windows) * 100 : 0}%`,
+                  }}
+                />
+              </div>
+              {/* Attempt counter */}
+              {backfillStatus.attempt_count > 0 && (
+                <span className="text-xs text-muted-foreground">
+                  Attempt {backfillStatus.attempt_count} of{' '}
+                  {backfillStatus.max_attempts}
+                </span>
+              )}
             </div>
-            {/* Progress bar */}
-            <div className="h-1.5 bg-muted rounded-full overflow-hidden">
-              <div
-                className="h-full bg-primary transition-all duration-300"
-                style={{
-                  width: `${backfillStatus.total_windows > 0 ? (backfillStatus.current_window / backfillStatus.total_windows) * 100 : 0}%`,
-                }}
-              />
-            </div>
-            {/* Attempt counter */}
-            {backfillStatus.attempt_count > 0 && (
-              <span className="text-xs text-muted-foreground">
-                Attempt {backfillStatus.attempt_count} of{' '}
-                {backfillStatus.max_attempts}
+          )}
+
+          {/* Show cancelled backfill status */}
+          {isBackfillCancelled && (
+            <div className="flex items-center gap-2 p-3 bg-muted/50 rounded-lg border">
+              <XCircle className="h-4 w-4 text-muted-foreground" />
+              <span className="text-sm text-muted-foreground">
+                Backfill cancelled
               </span>
+            </div>
+          )}
+
+          {/* Show permanently failed state */}
+          {isPermanentlyFailed && (
+            <div className="flex items-center gap-2 p-3 bg-destructive/10 rounded-lg border border-destructive/20">
+              <XCircle className="h-4 w-4 text-destructive" />
+              <span className="text-sm text-destructive">
+                Backfill failed after {backfillStatus?.max_attempts} attempts.
+                Please disconnect and reconnect your Garmin.
+              </span>
+            </div>
+          )}
+
+          {/* Show timed-out backfill types with retry buttons (warning/amber styling) */}
+          {timedOutTypes.length > 0 &&
+            !isBackfillInProgress &&
+            !isPermanentlyFailed && (
+              <div className="space-y-2 p-3 bg-warning-muted/10 rounded-lg border border-warning-muted/20">
+                <p className="text-sm font-medium text-warning-muted dark:text-warning-muted">
+                  Some data types timed out:
+                </p>
+                <div className="space-y-1.5">
+                  {timedOutTypes.map(({ type, timedOutCount }) => (
+                    <div
+                      key={type}
+                      className="flex items-center justify-between text-sm"
+                    >
+                      <div className="flex-1 min-w-0">
+                        <span className="font-medium">
+                          {formatTypeName(type)}
+                        </span>
+                        <p className="text-xs text-muted-foreground">
+                          Timed out in {timedOutCount} window
+                          {timedOutCount > 1 ? 's' : ''}
+                        </p>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 px-2 text-xs ml-2"
+                        onClick={() => retryBackfill(type)}
+                        disabled={isRetrying}
+                      >
+                        <RotateCcw className="h-3 w-3 mr-1" />
+                        Retry
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              </div>
             )}
-          </div>
-        )}
 
-        {/* Show cancelled backfill status */}
-        {isBackfillCancelled && (
-          <div className="flex items-center gap-2 p-3 bg-muted/50 rounded-lg border">
-            <XCircle className="h-4 w-4 text-muted-foreground" />
-            <span className="text-sm text-muted-foreground">
-              Backfill cancelled
-            </span>
-          </div>
-        )}
-
-        {/* Show permanently failed state */}
-        {isPermanentlyFailed && (
-          <div className="flex items-center gap-2 p-3 bg-destructive/10 rounded-lg border border-destructive/20">
-            <XCircle className="h-4 w-4 text-destructive" />
-            <span className="text-sm text-destructive">
-              Backfill failed after {backfillStatus?.max_attempts} attempts.
-              Please disconnect and reconnect your Garmin.
-            </span>
-          </div>
-        )}
-
-        {/* Show timed-out backfill types with retry buttons (warning/amber styling) */}
-        {timedOutTypes.length > 0 &&
-          !isBackfillInProgress &&
-          !isPermanentlyFailed && (
-            <div className="space-y-2 p-3 bg-warning-muted/10 rounded-lg border border-warning-muted/20">
-              <p className="text-sm font-medium text-warning-muted dark:text-warning-muted">
-                Some data types timed out:
-              </p>
-              <div className="space-y-1.5">
-                {timedOutTypes.map(({ type, timedOutCount }) => (
-                  <div
-                    key={type}
-                    className="flex items-center justify-between text-sm"
-                  >
-                    <div className="flex-1 min-w-0">
+          {/* Show failed types (error/destructive styling, no retry) */}
+          {failedTypes.length > 0 &&
+            !isBackfillInProgress &&
+            !isPermanentlyFailed && (
+              <div className="space-y-2 p-3 bg-destructive/10 rounded-lg border border-destructive/20">
+                <p className="text-sm font-medium text-destructive">
+                  Some data types failed:
+                </p>
+                <div className="space-y-1.5">
+                  {failedTypes.map(({ type, failedCount }) => (
+                    <div key={type} className="flex items-center text-sm">
+                      <XCircle className="h-3 w-3 text-destructive mr-2" />
                       <span className="font-medium">
                         {formatTypeName(type)}
                       </span>
-                      <p className="text-xs text-muted-foreground">
-                        Timed out in {timedOutCount} window
-                        {timedOutCount > 1 ? 's' : ''}
-                      </p>
+                      <span className="text-xs text-muted-foreground ml-2">
+                        Failed in {failedCount} window
+                        {failedCount > 1 ? 's' : ''}
+                      </span>
                     </div>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-7 px-2 text-xs ml-2"
-                      onClick={() => retryBackfill(type)}
-                      disabled={isRetrying}
-                    >
-                      <RotateCcw className="h-3 w-3 mr-1" />
-                      Retry
-                    </Button>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
-            </div>
-          )}
+            )}
 
-        {/* Show failed types (error/destructive styling, no retry) */}
-        {failedTypes.length > 0 &&
-          !isBackfillInProgress &&
-          !isPermanentlyFailed && (
-            <div className="space-y-2 p-3 bg-destructive/10 rounded-lg border border-destructive/20">
-              <p className="text-sm font-medium text-destructive">
-                Some data types failed:
-              </p>
-              <div className="space-y-1.5">
-                {failedTypes.map(({ type, failedCount }) => (
-                  <div key={type} className="flex items-center text-sm">
-                    <XCircle className="h-3 w-3 text-destructive mr-2" />
-                    <span className="font-medium">{formatTypeName(type)}</span>
-                    <span className="text-xs text-muted-foreground ml-2">
-                      Failed in {failedCount} window
-                      {failedCount > 1 ? 's' : ''}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
+          {/* Action buttons */}
+          {connection.status === 'active' && (
+            <div className="flex gap-2">
+              {/* Provider with a hard history cap: single constrained button */}
+              {connection.max_historical_days !== null &&
+                connection.max_historical_days !== undefined &&
+                !isBackfillInProgress &&
+                !isPermanentlyFailed && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="flex-1"
+                    onClick={() =>
+                      syncHistorical(connection.max_historical_days as number)
+                    }
+                    disabled={isSyncingHistorical}
+                  >
+                    {isSyncingHistorical ? (
+                      <>
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        Starting...
+                      </>
+                    ) : (
+                      <>
+                        <History className="h-4 w-4" />
+                        Sync {connection.max_historical_days}-day History
+                      </>
+                    )}
+                  </Button>
+                )}
 
-        {/* Action buttons */}
-        {connection.status === 'active' && (
-          <div className="flex gap-2">
-            {/* Provider with a hard history cap: single constrained button */}
-            {connection.max_historical_days !== null &&
-              connection.max_historical_days !== undefined &&
-              !isBackfillInProgress &&
-              !isPermanentlyFailed && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="flex-1"
-                  onClick={() =>
-                    syncHistorical(connection.max_historical_days as number)
-                  }
-                  disabled={isSyncingHistorical}
-                >
-                  {isSyncingHistorical ? (
-                    <>
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                      Starting...
-                    </>
-                  ) : (
-                    <>
-                      <History className="h-4 w-4" />
-                      Sync {connection.max_historical_days}-day History
-                    </>
-                  )}
-                </Button>
-              )}
+              {/* Unconstrained providers: Sync History dropdown + Force Live Sync */}
+              {(connection.max_historical_days === null ||
+                connection.max_historical_days === undefined) &&
+                connection.rest_pull &&
+                !isPermanentlyFailed && (
+                  <>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="flex-1"
+                          disabled={isSyncingHistorical}
+                        >
+                          {isSyncingHistorical ? (
+                            <>
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                              Starting...
+                            </>
+                          ) : (
+                            <>
+                              <History className="h-4 w-4" />
+                              Sync History
+                              <ChevronDown className="h-3 w-3 ml-auto opacity-60" />
+                            </>
+                          )}
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => syncHistorical(7)}>
+                          Last 7 days
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => syncHistorical(30)}>
+                          Last 30 days
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => syncHistorical(90)}>
+                          Last 3 months
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => syncHistorical(180)}>
+                          Last 6 months
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => syncHistorical(365)}>
+                          Last year
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
 
-            {/* Unconstrained providers: Sync History dropdown + Force Live Sync */}
-            {(connection.max_historical_days === null ||
-              connection.max_historical_days === undefined) &&
-              connection.rest_pull &&
-              !isPermanentlyFailed && (
-                <>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
+                    {connection.live_sync_mode !== 'webhook' && (
                       <Button
                         variant="outline"
                         size="sm"
                         className="flex-1"
-                        disabled={isSyncingHistorical}
+                        onClick={() => synchronizeDataFromProvider()}
+                        disabled={isSynchronizing}
                       >
-                        {isSyncingHistorical ? (
+                        {isSynchronizing ? (
                           <>
                             <Loader2 className="h-4 w-4 animate-spin" />
-                            Starting...
+                            Syncing...
                           </>
                         ) : (
                           <>
-                            <History className="h-4 w-4" />
-                            Sync History
-                            <ChevronDown className="h-3 w-3 ml-auto opacity-60" />
+                            <RefreshCw className="h-4 w-4" />
+                            Force Live Sync
                           </>
                         )}
                       </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={() => syncHistorical(7)}>
-                        Last 7 days
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => syncHistorical(30)}>
-                        Last 30 days
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => syncHistorical(90)}>
-                        Last 3 months
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => syncHistorical(180)}>
-                        Last 6 months
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => syncHistorical(365)}>
-                        Last year
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-
-                  {connection.live_sync_mode !== 'webhook' && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="flex-1"
-                      onClick={() => synchronizeDataFromProvider()}
-                      disabled={isSynchronizing}
-                    >
-                      {isSynchronizing ? (
-                        <>
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                          Syncing...
-                        </>
-                      ) : (
-                        <>
-                          <RefreshCw className="h-4 w-4" />
-                          Force Live Sync
-                        </>
-                      )}
-                    </Button>
-                  )}
-                </>
-              )}
-          </div>
-        )}
-
-        {/* ── Active sync (live status from SSE) ─────────────────────── */}
-        {activeSync && <ActiveSyncPanel event={activeSync} />}
-
-        {/* ── Last syncs (collapsible) ────────────────────────────────── */}
-        {recentRuns && recentRuns.length > 0 && (
-          <div className="border-t pt-3 space-y-2">
-            <button
-              type="button"
-              onClick={() => setShowLastSyncs((v) => !v)}
-              className="flex w-full items-center justify-between text-xs text-muted-foreground hover:text-foreground transition-colors"
-            >
-              <span className="flex items-center gap-1.5">
-                <History className="h-3.5 w-3.5" />
-                Last syncs ({recentRuns.length})
-              </span>
-              <ChevronDown
-                className={cn(
-                  'h-3.5 w-3.5 transition-transform',
-                  showLastSyncs && 'rotate-180'
+                    )}
+                  </>
                 )}
-              />
-            </button>
-            {showLastSyncs && (
-              <div className="flex flex-col gap-1.5">
-                {recentRuns.map((run) => (
-                  <SyncRunRow key={run.run_id} run={run} />
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-      </CardContent>
+            </div>
+          )}
+
+          {/* ── Active sync (live status from SSE) ─────────────────────── */}
+          {activeSync && <ActiveSyncPanel event={activeSync} />}
+
+          {/* ── Last syncs (collapsible) ────────────────────────────────── */}
+          {recentRuns && recentRuns.length > 0 && (
+            <div className="border-t pt-3 space-y-2">
+              <button
+                type="button"
+                onClick={() => setShowLastSyncs((v) => !v)}
+                className="flex w-full items-center justify-between text-xs text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <span className="flex items-center gap-1.5">
+                  <History className="h-3.5 w-3.5" />
+                  Last syncs ({recentRuns.length})
+                </span>
+                <ChevronDown
+                  className={cn(
+                    'h-3.5 w-3.5 transition-transform',
+                    showLastSyncs && 'rotate-180'
+                  )}
+                />
+              </button>
+              {showLastSyncs && (
+                <div className="flex flex-col gap-1.5">
+                  {recentRuns.map((run) => (
+                    <SyncRunRow key={run.run_id} run={run} />
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+        </CardContent>
+      )}
     </Card>
   );
 }

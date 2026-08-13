@@ -46,8 +46,6 @@ export function DateFilter({ onChange, className }: DateFilterProps) {
   const [from, setFrom] = useState(today);
   const [to, setTo] = useState(today);
 
-  const modeIndex = MODES.findIndex((m) => m.value === mode);
-
   const emit = (next: {
     mode: FilterMode;
     day?: string;
@@ -91,7 +89,7 @@ export function DateFilter({ onChange, className }: DateFilterProps) {
     }
   };
 
-  // Borderless input that sits inside a grouped, bordered container.
+  // Borderless input that sits inside the grouped `bg-foreground/5` container.
   const dateInputClass =
     'h-8 border-0 bg-transparent px-2.5 text-xs font-medium tabular-nums text-foreground ' +
     'focus:outline-none [color-scheme:light] dark:[color-scheme:dark]';
@@ -101,21 +99,13 @@ export function DateFilter({ onChange, className }: DateFilterProps) {
     'hover:bg-foreground/5 hover:text-foreground';
 
   return (
-    <div className={cn('flex flex-wrap items-center gap-2', className)}>
-      {/* Segmented mode toggle with a sliding pill (matches the dashboard). */}
+    <div className={cn('flex flex-col items-end gap-2', className)}>
+      {/* Segmented mode toggle. */}
       <div
         role="tablist"
         aria-label="Date filter mode"
-        className="relative inline-flex h-8 rounded-lg bg-foreground/5 p-1"
+        className="inline-flex h-8 items-center gap-1 rounded-lg bg-foreground/5 p-1"
       >
-        <span
-          aria-hidden
-          className="absolute inset-y-1 rounded-md bg-primary shadow-sm transition-transform duration-200 ease-out"
-          style={{
-            width: `${100 / MODES.length}%`,
-            transform: `translateX(${modeIndex * 100}%)`,
-          }}
-        />
         {MODES.map(({ value, label }) => {
           const active = mode === value;
           return (
@@ -126,9 +116,9 @@ export function DateFilter({ onChange, className }: DateFilterProps) {
               aria-selected={active}
               onClick={() => selectMode(value)}
               className={cn(
-                'relative z-10 flex flex-1 items-center justify-center whitespace-nowrap rounded-md px-3 text-xs font-medium transition-colors duration-200',
+                'flex h-full items-center justify-center whitespace-nowrap rounded-md px-3 text-xs font-medium transition-colors',
                 active
-                  ? 'text-primary-foreground'
+                  ? 'bg-primary text-primary-foreground shadow-sm'
                   : 'text-muted-foreground hover:text-foreground/70'
               )}
             >
@@ -142,13 +132,13 @@ export function DateFilter({ onChange, className }: DateFilterProps) {
         <div
           tabIndex={0}
           onKeyDown={onDayKeyDown}
-          className="inline-flex items-center overflow-hidden rounded-lg border border-border/60 bg-muted/40 outline-none transition-colors focus-within:border-primary/50 focus-visible:border-primary/50 focus-visible:ring-1 focus-visible:ring-ring"
+          className="inline-flex h-8 items-center overflow-hidden rounded-lg bg-foreground/5 outline-none transition-shadow focus-within:ring-1 focus-within:ring-primary/50"
           aria-label="Selected day (use left and right arrow keys to switch days)"
         >
           <button
             type="button"
             onClick={() => stepDay(-1)}
-            className={cn(stepperButtonClass, 'border-r border-border/60')}
+            className={cn(stepperButtonClass, 'border-r border-border/40')}
             aria-label="Previous day"
           >
             <ChevronLeft className="h-4 w-4" />
@@ -166,7 +156,7 @@ export function DateFilter({ onChange, className }: DateFilterProps) {
           <button
             type="button"
             onClick={() => stepDay(1)}
-            className={cn(stepperButtonClass, 'border-l border-border/60')}
+            className={cn(stepperButtonClass, 'border-l border-border/40')}
             aria-label="Next day"
           >
             <ChevronRight className="h-4 w-4" />
@@ -175,7 +165,7 @@ export function DateFilter({ onChange, className }: DateFilterProps) {
       )}
 
       {mode === 'range' && (
-        <div className="inline-flex items-center overflow-hidden rounded-lg border border-border/60 bg-muted/40 transition-colors focus-within:border-primary/50">
+        <div className="inline-flex h-8 items-center overflow-hidden rounded-lg bg-foreground/5 transition-shadow focus-within:ring-1 focus-within:ring-primary/50">
           <input
             type="date"
             value={from}
@@ -187,7 +177,7 @@ export function DateFilter({ onChange, className }: DateFilterProps) {
             className={dateInputClass}
             aria-label="From date"
           />
-          <span className="flex h-8 items-center border-x border-border/60 px-2 text-xs text-muted-foreground">
+          <span className="flex h-8 items-center border-x border-border/40 px-2 text-xs text-muted-foreground">
             →
           </span>
           <input

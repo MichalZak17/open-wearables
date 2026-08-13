@@ -15,8 +15,9 @@ import {
 } from 'lucide-react';
 import { useActivitySummaries } from '@/hooks/api/use-health';
 import { useCursorPagination } from '@/hooks/use-cursor-pagination';
-import { useDateRange } from '@/hooks/use-date-range';
-import type { DateRangeValue } from '@/components/ui/date-range-selector';
+import { usePeriodRange } from '@/hooks/use-date-range';
+import type { PeriodValue } from '@/components/ui/date-range-selector';
+import { Card } from '@/components/ui/card';
 import { CursorPagination } from '@/components/common/cursor-pagination';
 import { MetricCard } from '@/components/common/metric-card';
 import { DataSourceInfo } from '@/components/common/data-source-info';
@@ -43,8 +44,8 @@ import type { ActivitySummary } from '@/lib/api/types';
 
 interface ActivitySectionProps {
   userId: string;
-  dateRange: DateRangeValue;
-  onDateRangeChange: (value: DateRangeValue) => void;
+  dateRange: PeriodValue;
+  onDateRangeChange: (value: PeriodValue) => void;
 }
 
 const DAYS_PER_PAGE = 10;
@@ -332,7 +333,7 @@ export function ActivitySection({
   const pagination = useCursorPagination();
 
   // Date range hooks
-  const { startDate, endDate } = useDateRange(dateRange);
+  const { startIso, endIso, days } = usePeriodRange(dateRange);
 
   // Reset pagination when the date range changes so a stale cursor from a
   // previous window doesn't carry over to the new one.
@@ -345,9 +346,9 @@ export function ActivitySection({
   const { data: summaryData, isLoading: summaryLoading } = useActivitySummaries(
     userId,
     {
-      start_date: startDate,
-      end_date: endDate,
-      limit: dateRange,
+      start_date: startIso,
+      end_date: endIso,
+      limit: days,
     }
   );
 
@@ -358,8 +359,8 @@ export function ActivitySection({
     isLoading: daysLoading,
     isFetching,
   } = useActivitySummaries(userId, {
-    start_date: startDate,
-    end_date: endDate,
+    start_date: startIso,
+    end_date: endIso,
     limit: DAYS_PER_PAGE,
     cursor: pagination.currentCursor ?? undefined,
     sort_order: 'desc',
@@ -409,7 +410,7 @@ export function ActivitySection({
   return (
     <div className="space-y-6">
       {/* Summary Section */}
-      <div className="rounded-2xl border border-border/60 bg-gradient-to-br from-card/80 to-card/40 backdrop-blur-xl overflow-hidden">
+      <Card className="overflow-hidden">
         <SectionHeader
           title="Activity Summary"
           dateRange={dateRange}
@@ -504,10 +505,10 @@ export function ActivitySection({
             </div>
           )}
         </div>
-      </div>
+      </Card>
 
       {/* Activity Days Section */}
-      <div className="rounded-2xl border border-border/60 bg-gradient-to-br from-card/80 to-card/40 backdrop-blur-xl overflow-hidden">
+      <Card className="overflow-hidden">
         <SectionHeader
           title="Activity Days"
           rightContent={
@@ -572,7 +573,7 @@ export function ActivitySection({
             </div>
           )}
         </div>
-      </div>
+      </Card>
     </div>
   );
 }

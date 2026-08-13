@@ -3,10 +3,8 @@ import { format } from 'date-fns';
 import { CartesianGrid, Line, LineChart, XAxis, YAxis } from 'recharts';
 import {
   ChevronDown,
-  ChevronUp,
   Dumbbell,
   Flame,
-  Heart,
   MoveHorizontal,
   Timer,
   Trash2,
@@ -15,13 +13,24 @@ import {
   useWorkouts,
   useTimeSeries,
   useDeleteWorkout,
+  useUserDataSummary,
 } from '@/hooks/api/use-health';
 import { useCursorPagination } from '@/hooks/use-cursor-pagination';
 import {
-  useDateRangeDates,
+  usePeriodRange,
   useAllTimeRangeTimestamp,
 } from '@/hooks/use-date-range';
-import type { DateRangeValue } from '@/components/ui/date-range-selector';
+import type { PeriodValue } from '@/components/ui/date-range-selector';
+import { Card } from '@/components/ui/card';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import { cn } from '@/lib/utils';
 import { CursorPagination } from '@/components/common/cursor-pagination';
 import { SectionHeader } from '@/components/common/section-header';
 import {
@@ -45,9 +54,12 @@ import { EventDeleteDialog } from '@/components/common/event-delete-dialog';
 
 interface WorkoutSectionProps {
   userId: string;
-  dateRange: DateRangeValue;
-  onDateRangeChange: (value: DateRangeValue) => void;
+  dateRange: PeriodValue;
+  onDateRangeChange: (value: PeriodValue) => void;
 }
+
+// Number of columns in the workout table – used for full-width expanded rows.
+const WORKOUT_COLUMN_COUNT = 7;
 
 // Expandable workout row with HR time series
 function WorkoutRow({
@@ -88,253 +100,169 @@ function WorkoutRow({
   const workoutDate = workout.start_time || workout.start_datetime;
 
   return (
-    <div className="border border-border/60 rounded-lg overflow-hidden bg-card/30 hover:bg-card/40 transition-colors">
+    <>
       {/* Main row - always visible */}
-      <button
+      <TableRow
         onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full px-4 py-3 flex flex-col gap-1.5 text-left"
+        data-state={isExpanded ? 'selected' : undefined}
+        className="cursor-pointer"
       >
-        <div className="w-full flex items-center gap-4">
-          {/* Workout type emoji */}
-          <div
-            className={`flex-shrink-0 w-10 h-10 rounded-lg flex items-center justify-center text-xl ${style.bgColor}`}
-          >
-            {style.emoji}
-          </div>
-
-          {/* Workout info */}
-          <div className="flex-1 min-w-0 flex items-center">
-            {/* Type & Date */}
-            <div className="w-32 flex-shrink-0">
-              <p className="text-sm font-medium text-foreground">
-                {style.label}
-              </p>
-              <p className="text-xs text-muted-foreground">
-                {workoutDate
-                  ? format(new Date(workoutDate), 'MMM d, yyyy')
-                  : '-'}
-              </p>
-            </div>
-
-            {/* Stats - evenly spaced */}
-            <div className="flex-1 flex items-center justify-around">
-              {/* Duration */}
-              <div className="flex items-center gap-2">
-                <Timer className="h-4 w-4 text-muted-foreground" />
-                <div>
-                  <p className="text-sm font-medium text-foreground">
-                    {formatDuration(workout.duration_seconds)}
-                  </p>
-                  <p className="text-xs text-muted-foreground">Duration</p>
-                </div>
-              </div>
-
-              {/* Calories */}
-              <div className="flex items-center gap-2">
-                <Flame className="h-4 w-4 text-orange-400" />
-                <div>
-                  <p className="text-sm font-medium text-foreground">
-                    {formatCalories(workout.calories_kcal)}
-                  </p>
-                  <p className="text-xs text-muted-foreground">Calories</p>
-                </div>
-              </div>
-
-              {/* Avg Heart Rate */}
-              <div className="flex items-center gap-2">
-                <Heart className="h-4 w-4 text-rose-400" />
-                <div>
-                  <p className="text-sm font-medium text-foreground">
-                    {workout.avg_heart_rate_bpm
-                      ? `${Math.round(Number(workout.avg_heart_rate_bpm))} bpm`
-                      : '-'}
-                  </p>
-                  <p className="text-xs text-muted-foreground">Avg HR</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Expand indicator */}
-            <div className="w-8 flex-shrink-0 flex justify-end">
-              {isExpanded ? (
-                <ChevronUp className="h-5 w-5 text-muted-foreground" />
-              ) : (
-                <ChevronDown className="h-5 w-5 text-muted-foreground" />
-              )}
-            </div>
-          </div>
-        </div>
-
-        <DataSourceInfo source={workout.source} />
-      </button>
+        <TableCell className="font-medium text-foreground">
+          {style.label}
+        </TableCell>
+        <TableCell>
+          <DataSourceInfo source={workout.source} />
+        </TableCell>
+        <TableCell className="whitespace-nowrap text-muted-foreground">
+          {workoutDate ? format(new Date(workoutDate), 'MMM d, yyyy') : '—'}
+        </TableCell>
+        <TableCell className="text-right tabular-nums text-foreground">
+          {formatDuration(workout.duration_seconds)}
+        </TableCell>
+        <TableCell className="text-right tabular-nums text-foreground">
+          {formatCalories(workout.calories_kcal)}
+        </TableCell>
+        <TableCell className="text-right tabular-nums text-foreground">
+          {workout.avg_heart_rate_bpm
+            ? `${Math.round(Number(workout.avg_heart_rate_bpm))} bpm`
+            : '—'}
+        </TableCell>
+        <TableCell className="w-8 pl-0 text-right">
+          <ChevronDown
+            className={cn(
+              'h-4 w-4 text-muted-foreground transition-transform',
+              isExpanded && 'rotate-180'
+            )}
+          />
+        </TableCell>
+      </TableRow>
 
       {/* Expanded details */}
       {isExpanded && (
-        <div className="px-4 pb-4 pt-2 border-t border-border/60 space-y-4">
-          {/* Heart Rate During Workout Chart */}
-          <div>
-            <h4 className="text-xs font-medium text-muted-foreground mb-3 uppercase tracking-wider">
-              Heart Rate During Workout
-            </h4>
-            {hrLoading ? (
-              <div className="h-[160px] flex items-center justify-center">
-                <div className="h-5 w-5 border-2 border-rose-500 border-t-transparent rounded-full animate-spin" />
+        <TableRow className="hover:bg-transparent">
+          <TableCell colSpan={WORKOUT_COLUMN_COUNT} className="bg-muted/20 p-0">
+            <div className="space-y-4 px-4 py-4">
+              {/* Heart Rate During Workout Chart */}
+              <div>
+                <h4 className="text-xs font-medium text-muted-foreground mb-3 uppercase tracking-wider">
+                  Heart Rate During Workout
+                </h4>
+                {hrLoading ? (
+                  <div className="h-[160px] flex items-center justify-center">
+                    <div className="h-5 w-5 border-2 border-rose-500 border-t-transparent rounded-full animate-spin" />
+                  </div>
+                ) : hrChartData.length > 0 ? (
+                  <ChartContainer
+                    config={HR_CHART_CONFIG}
+                    className="h-[160px] w-full"
+                  >
+                    <LineChart
+                      accessibilityLayer
+                      data={hrChartData}
+                      margin={{ left: 8, right: 8 }}
+                    >
+                      <CartesianGrid vertical={false} strokeDasharray="3 3" />
+                      <XAxis
+                        dataKey="time"
+                        tickLine={false}
+                        axisLine={false}
+                        tickMargin={8}
+                        interval="preserveStartEnd"
+                        tick={{ fill: '#71717a', fontSize: 10 }}
+                      />
+                      <YAxis
+                        tickLine={false}
+                        axisLine={false}
+                        tickMargin={8}
+                        tick={{ fill: '#71717a', fontSize: 10 }}
+                        domain={['dataMin - 10', 'dataMax + 10']}
+                        width={35}
+                      />
+                      <ChartTooltip
+                        cursor={false}
+                        content={<ChartTooltipContent />}
+                      />
+                      <Line
+                        isAnimationActive={false}
+                        dataKey="hr"
+                        type="monotone"
+                        stroke="var(--color-hr)"
+                        strokeWidth={2}
+                        dot={false}
+                        activeDot={{ r: 4, fill: 'var(--color-hr)' }}
+                      />
+                    </LineChart>
+                  </ChartContainer>
+                ) : (
+                  <p className="text-xs text-muted-foreground text-center py-4">
+                    No heart rate data available for this workout
+                  </p>
+                )}
               </div>
-            ) : hrChartData.length > 0 ? (
-              <ChartContainer
-                config={HR_CHART_CONFIG}
-                className="h-[160px] w-full"
-              >
-                <LineChart
-                  accessibilityLayer
-                  data={hrChartData}
-                  margin={{ left: 8, right: 8 }}
+
+              {/* Detail Fields */}
+              {detailFields.length > 0 && (
+                <dl className="grid grid-cols-2 gap-x-6 gap-y-4 border-t border-border/40 pt-4 sm:grid-cols-3 lg:grid-cols-4">
+                  {detailFields.map((field) => (
+                    <div key={field.label} className="space-y-1">
+                      <dt className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+                        {field.label}
+                      </dt>
+                      <dd className="text-sm font-medium tabular-nums text-foreground">
+                        {field.value}
+                      </dd>
+                    </div>
+                  ))}
+                </dl>
+              )}
+
+              {/* Delete button */}
+              <div className="flex justify-end border-t border-border/40 pt-3">
+                <button
+                  onClick={() => setShowDelete(true)}
+                  className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-destructive-muted transition-colors"
                 >
-                  <CartesianGrid vertical={false} strokeDasharray="3 3" />
-                  <XAxis
-                    dataKey="time"
-                    tickLine={false}
-                    axisLine={false}
-                    tickMargin={8}
-                    interval="preserveStartEnd"
-                    tick={{ fill: '#71717a', fontSize: 10 }}
-                  />
-                  <YAxis
-                    tickLine={false}
-                    axisLine={false}
-                    tickMargin={8}
-                    tick={{ fill: '#71717a', fontSize: 10 }}
-                    domain={['dataMin - 10', 'dataMax + 10']}
-                    width={35}
-                  />
-                  <ChartTooltip
-                    cursor={false}
-                    content={<ChartTooltipContent />}
-                  />
-                  <Line
-                    isAnimationActive={false}
-                    dataKey="hr"
-                    type="monotone"
-                    stroke="var(--color-hr)"
-                    strokeWidth={2}
-                    dot={false}
-                    activeDot={{ r: 4, fill: 'var(--color-hr)' }}
-                  />
-                </LineChart>
-              </ChartContainer>
-            ) : (
-              <p className="text-xs text-muted-foreground text-center py-4">
-                No heart rate data available for this workout
-              </p>
-            )}
-          </div>
-
-          {/* Detail Fields */}
-          {detailFields.length > 0 && (
-            <div className="flex gap-6 pt-2 border-t border-border/40">
-              {/* Left column */}
-              <div className="flex-1 space-y-2">
-                {detailFields
-                  .slice(0, Math.ceil(detailFields.length / 2))
-                  .map((field) => (
-                    <div
-                      key={field.label}
-                      className="flex items-center justify-between py-1"
-                    >
-                      <span className="text-sm text-muted-foreground">
-                        {field.label}
-                      </span>
-                      <span className="text-sm font-medium text-foreground">
-                        {field.value}
-                      </span>
-                    </div>
-                  ))}
+                  <Trash2 className="h-3.5 w-3.5" />
+                  Delete workout
+                </button>
               </div>
 
-              {/* Divider */}
-              <div className="w-px bg-muted" />
-
-              {/* Right column */}
-              <div className="flex-1 space-y-2">
-                {detailFields
-                  .slice(Math.ceil(detailFields.length / 2))
-                  .map((field) => (
-                    <div
-                      key={field.label}
-                      className="flex items-center justify-between py-1"
-                    >
-                      <span className="text-sm text-muted-foreground">
-                        {field.label}
-                      </span>
-                      <span className="text-sm font-medium text-foreground">
-                        {field.value}
-                      </span>
-                    </div>
-                  ))}
-              </div>
+              <EventDeleteDialog
+                open={showDelete}
+                title="Delete workout?"
+                description="This workout and all associated data will be permanently removed. This cannot be undone."
+                isPending={deleteWorkout.isPending}
+                onClose={() => setShowDelete(false)}
+                onConfirm={() =>
+                  deleteWorkout.mutate(workout.id, {
+                    onSuccess: () => setShowDelete(false),
+                  })
+                }
+              />
             </div>
-          )}
-
-          {/* Delete button */}
-          <div className="flex justify-end pt-2 border-t border-border/40">
-            <button
-              onClick={() => setShowDelete(true)}
-              className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-destructive-muted transition-colors"
-            >
-              <Trash2 className="h-3.5 w-3.5" />
-              Delete workout
-            </button>
-          </div>
-        </div>
+          </TableCell>
+        </TableRow>
       )}
-
-      <EventDeleteDialog
-        open={showDelete}
-        title="Delete workout?"
-        description="This workout and all associated data will be permanently removed. This cannot be undone."
-        isPending={deleteWorkout.isPending}
-        onClose={() => setShowDelete(false)}
-        onConfirm={() =>
-          deleteWorkout.mutate(workout.id, {
-            onSuccess: () => setShowDelete(false),
-          })
-        }
-      />
-    </div>
+    </>
   );
 }
 
 // Loading skeleton
 function WorkoutSectionSkeleton() {
   return (
-    <div className="space-y-3">
-      {[1, 2, 3, 4, 5].map((i) => (
-        <div
-          key={i}
-          className="p-4 border border-border/60 rounded-lg bg-card/30"
-        >
-          <div className="flex items-center gap-4">
-            <div className="h-10 w-10 bg-muted rounded-lg animate-pulse" />
-            <div className="flex-1 grid grid-cols-4 gap-4">
-              <div className="space-y-2">
-                <div className="h-4 w-20 bg-muted rounded animate-pulse" />
-                <div className="h-3 w-16 bg-muted/50 rounded animate-pulse" />
-              </div>
-              <div className="space-y-2">
-                <div className="h-4 w-12 bg-muted rounded animate-pulse" />
-                <div className="h-3 w-14 bg-muted/50 rounded animate-pulse" />
-              </div>
-              <div className="space-y-2">
-                <div className="h-4 w-16 bg-muted rounded animate-pulse" />
-                <div className="h-3 w-12 bg-muted/50 rounded animate-pulse" />
-              </div>
-              <div className="flex justify-end">
-                <div className="h-5 w-5 bg-muted rounded animate-pulse" />
-              </div>
-            </div>
+    <div className="overflow-hidden rounded-lg border border-border">
+      <div className="divide-y divide-border">
+        {[1, 2, 3, 4, 5].map((i) => (
+          <div key={i} className="flex items-center gap-4 px-4 py-3.5">
+            <div className="h-4 w-28 bg-muted rounded animate-pulse" />
+            <div className="h-4 w-24 bg-muted/50 rounded animate-pulse" />
+            <div className="h-4 w-24 bg-muted/50 rounded animate-pulse" />
+            <div className="ml-auto h-4 w-12 bg-muted rounded animate-pulse" />
+            <div className="h-4 w-14 bg-muted rounded animate-pulse" />
+            <div className="h-4 w-12 bg-muted rounded animate-pulse" />
           </div>
-        </div>
-      ))}
+        ))}
+      </div>
     </div>
   );
 }
@@ -349,9 +277,13 @@ export function WorkoutSection({
   // Cursor-based pagination for workouts
   const pagination = useCursorPagination();
 
+  // All-time workout total – cursor responses don't carry a count, so we source
+  // it from the data summary to show "Page X of Y" (the list is always all-time).
+  const { data: dataSummary } = useUserDataSummary(userId);
+
   // Date range hooks
   const allTimeRange = useAllTimeRangeTimestamp();
-  const { startDate, endDate } = useDateRangeDates(dateRange);
+  const { startDate, endDate } = usePeriodRange(dateRange);
 
   // Fetch workouts for current page
   const {
@@ -395,7 +327,7 @@ export function WorkoutSection({
   return (
     <div className="space-y-6">
       {/* Summary Section */}
-      <div className="rounded-2xl border border-border/60 bg-gradient-to-br from-card/80 to-card/40 backdrop-blur-xl overflow-hidden">
+      <Card className="overflow-hidden">
         <SectionHeader
           title="Summary"
           dateRange={dateRange}
@@ -475,10 +407,10 @@ export function WorkoutSection({
             </p>
           )}
         </div>
-      </div>
+      </Card>
 
       {/* Workout List Section */}
-      <div className="rounded-2xl border border-border/60 bg-gradient-to-br from-card/80 to-card/40 backdrop-blur-xl overflow-hidden">
+      <Card className="overflow-hidden">
         <SectionHeader
           title="All Workouts"
           rightContent={
@@ -500,14 +432,29 @@ export function WorkoutSection({
           ) : (
             <div className="space-y-4">
               {/* Workout List */}
-              <div className="space-y-3">
-                {workouts.map((workout) => (
-                  <WorkoutRow
-                    key={workout.id}
-                    workout={workout}
-                    userId={userId}
-                  />
-                ))}
+              <div className="overflow-hidden rounded-lg border border-border">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="hover:bg-transparent">
+                      <TableHead>Type</TableHead>
+                      <TableHead>Source</TableHead>
+                      <TableHead>Date</TableHead>
+                      <TableHead className="text-right">Duration</TableHead>
+                      <TableHead className="text-right">Calories</TableHead>
+                      <TableHead className="text-right">Avg HR</TableHead>
+                      <TableHead className="w-8" />
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {workouts.map((workout) => (
+                      <WorkoutRow
+                        key={workout.id}
+                        workout={workout}
+                        userId={userId}
+                      />
+                    ))}
+                  </TableBody>
+                </Table>
               </div>
 
               {/* Pagination Controls */}
@@ -518,11 +465,14 @@ export function WorkoutSection({
                 isFetching={isFetching}
                 onPrevPage={handlePrevPage}
                 onNextPage={handleNextPage}
+                totalItems={dataSummary?.total_workouts}
+                pageSize={PAGE_SIZE}
+                itemLabel="workouts"
               />
             </div>
           )}
         </div>
-      </div>
+      </Card>
     </div>
   );
 }

@@ -1,10 +1,21 @@
-import { useState, useEffect, useMemo } from 'react';
-import { Link as LinkIcon, Check, Copy, Pencil } from 'lucide-react';
-import { useUserConnections } from '@/hooks/api/use-health';
+import { useState, useEffect, useMemo, memo } from 'react';
+import {
+  Link as LinkIcon,
+  Check,
+  Pencil,
+  Database,
+  Dumbbell,
+  Moon,
+  ChevronDown,
+  ChevronUp,
+} from 'lucide-react';
+import { useUserConnections, useUserDataSummary } from '@/hooks/api/use-health';
 import { useUser, useUpdateUser } from '@/hooks/api/use-users';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
 import {
   Dialog,
   DialogContent,
@@ -13,11 +24,26 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { formatDate, truncateId } from '@/lib/utils/format';
+import {
+  formatDate,
+  truncateId,
+  formatCompactNumber,
+} from '@/lib/utils/format';
 import { copyToClipboard } from '@/lib/utils/clipboard';
+import { cn } from '@/lib/utils';
+import { DateFilter } from '@/components/ui/date-filter';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import { DataTablePagination } from '@/components/ui/data-table-pagination';
 import { ConnectionCard } from '@/components/user/connection-card';
 import type { SyncStatusEvent, SyncRunSummary } from '@/lib/api';
-import { DataSummarySection } from '@/components/user/data-summary-section';
+import type { DataSummaryParams, ProviderDataCount } from '@/lib/api/types';
 import { useSyncStatusStream, useSyncRuns } from '@/hooks/api/use-sync-status';
 
 interface ProfileSectionProps {
@@ -62,7 +88,6 @@ export function ProfileSection({ userId }: ProfileSectionProps) {
   }, [syncRuns]);
 
   const [copied, setCopied] = useState(false);
-  const [copiedUserId, setCopiedUserId] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [editForm, setEditForm] = useState({
     first_name: '',
@@ -82,15 +107,16 @@ export function ProfileSection({ userId }: ProfileSectionProps) {
     }
   }, [user]);
 
-  const handleCopyUserId = async () => {
-    const success = await copyToClipboard(
-      userId,
-      'User ID copied to clipboard'
+  const handleCopyUserId = () => {
+    void copyToClipboard(userId, 'User ID copied to clipboard');
+  };
+
+  const handleCopyExternalUserId = () => {
+    if (!user?.external_user_id) return;
+    void copyToClipboard(
+      user.external_user_id,
+      'External User ID copied to clipboard'
     );
-    if (success) {
-      setCopiedUserId(true);
-      setTimeout(() => setCopiedUserId(false), 2000);
-    }
   };
 
   const handleCopyPairLink = async () => {
@@ -128,16 +154,15 @@ export function ProfileSection({ userId }: ProfileSectionProps) {
     <>
       <div className="space-y-6">
         {/* User Information */}
-        <div className="rounded-2xl border border-border/60 bg-gradient-to-br from-card/80 to-card/40 backdrop-blur-xl overflow-hidden">
+        <Card className="overflow-hidden">
           <div className="px-6 py-4 border-b border-border/60 flex items-center justify-between">
             <h2 className="text-sm font-medium text-foreground">
               User Information
             </h2>
             <Button
-              variant="outline"
+              variant="default"
               size="sm"
               onClick={() => setIsEditDialogOpen(true)}
-              className="text-muted-foreground hover:text-foreground"
             >
               <Pencil className="h-3.5 w-3.5" />
               Edit
@@ -159,30 +184,32 @@ export function ProfileSection({ userId }: ProfileSectionProps) {
               <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
                 <div>
                   <p className="text-xs text-muted-foreground mb-1">User ID</p>
-                  <div className="flex items-center gap-1.5">
-                    <code className="font-mono text-sm text-foreground/90 bg-muted px-2 py-1 rounded">
-                      {truncateId(user?.id ?? '')}
-                    </code>
-                    <Button
-                      variant="ghost"
-                      size="icon-sm"
-                      onClick={handleCopyUserId}
-                    >
-                      {copiedUserId ? (
-                        <Check className="h-3 w-3 text-success-muted" />
-                      ) : (
-                        <Copy className="h-3 w-3" />
-                      )}
-                    </Button>
-                  </div>
+                  <button
+                    type="button"
+                    onClick={handleCopyUserId}
+                    title="Click to copy User ID"
+                    className="cursor-pointer rounded bg-muted px-2 py-1 font-mono text-sm text-foreground/90 transition-colors hover:bg-muted-foreground/20"
+                  >
+                    {truncateId(user?.id ?? '')}
+                  </button>
                 </div>
                 <div>
                   <p className="text-xs text-muted-foreground mb-1">
                     External User ID
                   </p>
-                  <code className="font-mono text-sm text-foreground/90 bg-muted px-2 py-1 rounded">
-                    {user?.external_user_id || '—'}
-                  </code>
+                  <button
+                    type="button"
+                    onClick={handleCopyExternalUserId}
+                    disabled={!user?.external_user_id}
+                    title={
+                      user?.external_user_id
+                        ? 'Click to copy External User ID'
+                        : undefined
+                    }
+                    className="cursor-pointer rounded bg-muted px-2 py-1 font-mono text-sm text-foreground/90 transition-colors hover:bg-muted-foreground/20 disabled:cursor-default disabled:hover:bg-muted"
+                  >
+                    {truncateId(user?.external_user_id ?? '')}
+                  </button>
                 </div>
                 <div>
                   <p className="text-xs text-muted-foreground mb-1">Email</p>
@@ -199,15 +226,15 @@ export function ProfileSection({ userId }: ProfileSectionProps) {
               </div>
             )}
           </div>
-        </div>
+        </Card>
 
         {/* Connected Providers */}
-        <div className="rounded-2xl border border-border/60 bg-gradient-to-br from-card/80 to-card/40 backdrop-blur-xl overflow-hidden">
+        <Card className="overflow-hidden">
           <div className="px-6 py-4 border-b border-border/60">
             <h2 className="text-sm font-medium text-foreground">
               Connected Providers
             </h2>
-            <p className="text-xs text-muted-foreground mt-1">
+            <p className="text-xs text-foreground/70 mt-1">
               Wearable devices and health platforms connected to this user
             </p>
           </div>
@@ -267,7 +294,7 @@ export function ProfileSection({ userId }: ProfileSectionProps) {
               </div>
             )}
           </div>
-        </div>
+        </Card>
 
         {/* Data Summary */}
         <DataSummarySection userId={userId} />
@@ -275,7 +302,10 @@ export function ProfileSection({ userId }: ProfileSectionProps) {
 
       {/* Edit User Dialog */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent className="max-w-md">
+        <DialogContent
+          className="max-w-2xl"
+          onOpenAutoFocus={(e) => e.preventDefault()}
+        >
           <DialogHeader>
             <DialogTitle>Edit User</DialogTitle>
             <DialogDescription>Update user information</DialogDescription>
@@ -293,7 +323,6 @@ export function ProfileSection({ userId }: ProfileSectionProps) {
                     setEditForm({ ...editForm, first_name: e.target.value })
                   }
                   placeholder="John"
-                  className="bg-muted border-border"
                 />
               </div>
               <div className="space-y-2">
@@ -307,7 +336,6 @@ export function ProfileSection({ userId }: ProfileSectionProps) {
                     setEditForm({ ...editForm, last_name: e.target.value })
                   }
                   placeholder="Doe"
-                  className="bg-muted border-border"
                 />
               </div>
             </div>
@@ -323,7 +351,6 @@ export function ProfileSection({ userId }: ProfileSectionProps) {
                   setEditForm({ ...editForm, email: e.target.value })
                 }
                 placeholder="john@example.com"
-                className="bg-muted border-border"
               />
             </div>
             <div className="space-y-2">
@@ -340,7 +367,6 @@ export function ProfileSection({ userId }: ProfileSectionProps) {
                   })
                 }
                 placeholder="external-123"
-                className="bg-muted border-border"
               />
               <p className="text-xs text-muted-foreground">
                 Optional identifier from your system
@@ -361,5 +387,366 @@ export function ProfileSection({ userId }: ProfileSectionProps) {
         </DialogContent>
       </Dialog>
     </>
+  );
+}
+
+// ============================================================================
+// Data Summary
+// ============================================================================
+
+// Rank accents for the top three entries (matches the dashboard metrics cards).
+const RANK_COLORS = [
+  'text-primary',
+  'text-foreground-muted',
+  'text-foreground-subtle',
+];
+
+interface DataSummarySectionProps {
+  userId: string;
+}
+
+function formatSeriesType(code: string): string {
+  return code.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
+function formatProvider(provider: string): string {
+  return provider.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
+function StatCard({
+  icon: Icon,
+  label,
+  value,
+  iconClass,
+}: {
+  icon: React.ComponentType<{ className?: string }>;
+  label: string;
+  value: number;
+  iconClass?: string;
+}) {
+  return (
+    <div className="group relative overflow-hidden rounded-xl border border-border/60 bg-card/40 p-5 transition-colors hover:border-border hover:bg-card/60">
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <p className="text-3xl font-bold leading-none tabular-nums text-foreground">
+            {formatCompactNumber(value)}
+          </p>
+          <p className="mt-2 text-xs font-medium text-muted-foreground">
+            {label}
+          </p>
+        </div>
+        <div
+          className={cn(
+            'flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border transition-transform group-hover:scale-105',
+            iconClass ?? 'border-border/60 bg-muted/40 text-muted-foreground'
+          )}
+        >
+          <Icon className="h-5 w-5" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+const TypeGrid = memo(function TypeGrid({
+  counts,
+  limit,
+}: {
+  counts: Record<string, number>;
+  limit?: number;
+}) {
+  const displayed = useMemo(() => {
+    const entries = Object.entries(counts).sort((a, b) => b[1] - a[1]);
+    return limit ? entries.slice(0, limit) : entries;
+  }, [counts, limit]);
+
+  if (displayed.length === 0) {
+    return <p className="text-sm text-muted-foreground">No data points</p>;
+  }
+
+  return (
+    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+      {displayed.map(([type, count], i) => (
+        <div
+          key={type}
+          className="flex flex-col gap-2 rounded-xl border border-border/60 bg-card/40 p-4 transition-colors duration-200 hover:bg-card/60"
+        >
+          <span
+            className={cn(
+              'font-mono text-[10px] font-semibold',
+              RANK_COLORS[i] ?? RANK_COLORS[2]
+            )}
+          >
+            #{i + 1}
+          </span>
+          <p className="text-2xl font-bold tabular-nums leading-none text-foreground">
+            {formatCompactNumber(count)}
+          </p>
+          <p
+            className="truncate text-xs text-muted-foreground"
+            title={formatSeriesType(type)}
+          >
+            {formatSeriesType(type)}
+          </p>
+        </div>
+      ))}
+    </div>
+  );
+});
+
+const ProviderCard = memo(function ProviderCard({
+  provider,
+}: {
+  provider: ProviderDataCount;
+}) {
+  const [expanded, setExpanded] = useState(false);
+  const totalRecords =
+    provider.data_points + provider.workout_count + provider.sleep_count;
+  const seriesEntries = Object.entries(provider.series_counts);
+
+  return (
+    <div className="overflow-hidden rounded-xl border border-border/60 bg-card/40 transition-colors hover:border-border/80">
+      <Button
+        type="button"
+        variant="secondary"
+        onClick={() => setExpanded(!expanded)}
+        className="flex h-auto w-full items-center justify-between rounded-none border-0 px-4 py-3.5 text-left"
+      >
+        <div className="flex items-center gap-3">
+          <div className="flex h-7 w-7 items-center justify-center rounded-md border border-border/60 bg-muted/40">
+            <span className="text-[10px] font-bold text-foreground/70">
+              {formatProvider(provider.provider).charAt(0)}
+            </span>
+          </div>
+          <div>
+            <span className="text-sm font-medium text-foreground">
+              {formatProvider(provider.provider)}
+            </span>
+            <span className="ml-2 rounded-full border border-border/60 bg-muted/40 px-1.5 py-0.5 text-[10px] tabular-nums text-muted-foreground">
+              {formatCompactNumber(totalRecords)}
+            </span>
+          </div>
+        </div>
+        {expanded ? (
+          <ChevronUp className="h-4 w-4 text-muted-foreground" />
+        ) : (
+          <ChevronDown className="h-4 w-4 text-muted-foreground" />
+        )}
+      </Button>
+
+      {expanded && (
+        <div className="space-y-4 border-t border-border/60 px-4 py-4">
+          <div className="grid grid-cols-3 gap-2">
+            {[
+              { label: 'Data Points', value: provider.data_points },
+              { label: 'Workouts', value: provider.workout_count },
+              { label: 'Sleep', value: provider.sleep_count },
+            ].map(({ label, value }) => (
+              <div
+                key={label}
+                className="flex flex-col items-center gap-1 rounded-xl border border-border/60 bg-card/40 p-3 text-center"
+              >
+                <p className="text-xl font-bold tabular-nums leading-none text-foreground">
+                  {formatCompactNumber(value)}
+                </p>
+                <p className="text-[11px] text-muted-foreground">{label}</p>
+              </div>
+            ))}
+          </div>
+
+          {seriesEntries.length > 0 && (
+            <TypeGrid counts={provider.series_counts} />
+          )}
+        </div>
+      )}
+    </div>
+  );
+});
+
+function LoadingSkeleton() {
+  return (
+    <div className="space-y-4">
+      <div className="grid grid-cols-3 gap-4">
+        {[1, 2, 3].map((i) => (
+          <Skeleton key={i} className="h-[72px] rounded-lg" />
+        ))}
+      </div>
+      <div className="space-y-2">
+        {[1, 2, 3].map((i) => (
+          <Skeleton key={i} className="h-8" />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+const WORKOUT_TYPES_PAGE_SIZES = [10, 25, 50, 100];
+
+// Paginated table of workout types and their record counts, sorted by count.
+function WorkoutTypesTable({ counts }: { counts: Record<string, number> }) {
+  const [page, setPage] = useState(0);
+  const [pageSize, setPageSize] = useState(WORKOUT_TYPES_PAGE_SIZES[0]);
+
+  const rows = useMemo(
+    () => Object.entries(counts).sort((a, b) => b[1] - a[1]),
+    [counts]
+  );
+
+  const total = rows.length;
+  const pageCount = Math.ceil(total / pageSize);
+  // Clamp in case the underlying data shrank (e.g. the date filter changed).
+  const currentPage = Math.min(page, Math.max(0, pageCount - 1));
+  const start = currentPage * pageSize;
+  const pageRows = rows.slice(start, start + pageSize);
+
+  return (
+    <div className="overflow-hidden rounded-lg border border-border">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Workout Type</TableHead>
+            <TableHead className="text-right">Records</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {pageRows.map(([type, count]) => (
+            <TableRow key={type}>
+              <TableCell className="font-medium text-foreground">
+                {formatSeriesType(type)}
+              </TableCell>
+              <TableCell className="text-right tabular-nums text-muted-foreground">
+                {formatCompactNumber(count)}
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+      <DataTablePagination
+        page={currentPage}
+        pageCount={pageCount}
+        pageSize={pageSize}
+        total={total}
+        onPageChange={setPage}
+        onPageSizeChange={(size) => {
+          setPageSize(size);
+          setPage(0);
+        }}
+        pageSizeOptions={WORKOUT_TYPES_PAGE_SIZES}
+        itemLabel="workout types"
+      />
+    </div>
+  );
+}
+
+function DataSummarySection({ userId }: DataSummarySectionProps) {
+  const [range, setRange] = useState<DataSummaryParams | undefined>(undefined);
+  const { data, isLoading } = useUserDataSummary(userId, range);
+  const [showAllTypes, setShowAllTypes] = useState(false);
+
+  const isEmpty =
+    data &&
+    data.total_data_points === 0 &&
+    data.total_workouts === 0 &&
+    data.total_sleep_events === 0;
+
+  return (
+    <Card className="overflow-hidden">
+      <div className="flex flex-wrap items-start justify-between gap-3 px-6 py-4 border-b border-border/60">
+        <div>
+          <h2 className="text-sm font-medium text-foreground">Data Summary</h2>
+          <p className="text-xs text-muted-foreground mt-1">
+            {range
+              ? 'Health data collected in the selected period'
+              : 'Overview of all health data collected for this user'}
+          </p>
+        </div>
+        <DateFilter onChange={setRange} />
+      </div>
+      <div className="p-6">
+        {isLoading ? (
+          <LoadingSkeleton />
+        ) : isEmpty ? (
+          <div className="text-center py-8">
+            <p className="text-muted-foreground">
+              {range
+                ? 'No data in the selected period'
+                : 'No data collected yet'}
+            </p>
+          </div>
+        ) : data ? (
+          <div className="space-y-6">
+            {/* Summary stats */}
+            <div className="grid grid-cols-3 gap-3">
+              <StatCard
+                icon={Database}
+                label="Data Points"
+                value={data.total_data_points}
+                iconClass="border-primary/30 bg-primary/10 text-primary-muted"
+              />
+              <StatCard
+                icon={Dumbbell}
+                label="Workouts"
+                value={data.total_workouts}
+                iconClass="border-secondary-muted/30 bg-secondary-muted/10 text-secondary-muted"
+              />
+              <StatCard
+                icon={Moon}
+                label="Sleep Events"
+                value={data.total_sleep_events}
+                iconClass="border-accent-muted/30 bg-accent-muted/10 text-accent-muted"
+              />
+            </div>
+
+            {/* Series types */}
+            {Object.keys(data.series_type_counts).length > 0 && (
+              <div>
+                <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  Series Types
+                </h3>
+                <TypeGrid
+                  counts={data.series_type_counts}
+                  limit={showAllTypes ? undefined : 8}
+                />
+                {Object.keys(data.series_type_counts).length > 8 && (
+                  <button
+                    type="button"
+                    onClick={() => setShowAllTypes(!showAllTypes)}
+                    className="mt-3 text-xs text-muted-foreground transition-colors hover:text-foreground/90"
+                  >
+                    {showAllTypes
+                      ? 'Show less'
+                      : `Show all ${Object.keys(data.series_type_counts).length} types`}
+                  </button>
+                )}
+              </div>
+            )}
+
+            {/* Workout types */}
+            {Object.keys(data.workout_type_counts).length > 0 && (
+              <div>
+                <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  Workout Types
+                </h3>
+                <WorkoutTypesTable counts={data.workout_type_counts} />
+              </div>
+            )}
+
+            {/* Provider breakdown */}
+            {data.by_provider.length > 0 && (
+              <div>
+                <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  By Provider
+                </h3>
+                <div className="space-y-2">
+                  {data.by_provider.map((provider) => (
+                    <ProviderCard key={provider.provider} provider={provider} />
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        ) : null}
+      </div>
+    </Card>
   );
 }

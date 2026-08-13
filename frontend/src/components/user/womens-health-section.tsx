@@ -6,8 +6,9 @@ import {
   useDeleteMenstrualCycle,
 } from '@/hooks/api/use-health';
 import { useCursorPagination } from '@/hooks/use-cursor-pagination';
-import { useDateRange } from '@/hooks/use-date-range';
-import type { DateRangeValue } from '@/components/ui/date-range-selector';
+import { usePeriodRange } from '@/hooks/use-date-range';
+import type { PeriodValue } from '@/components/ui/date-range-selector';
+import { Card } from '@/components/ui/card';
 import { CursorPagination } from '@/components/common/cursor-pagination';
 import { MetricCard } from '@/components/common/metric-card';
 import { DataSourceInfo } from '@/components/common/data-source-info';
@@ -17,8 +18,8 @@ import type { MenstrualCycleRecord } from '@/lib/api/types';
 
 interface WomensHealthSectionProps {
   userId: string;
-  dateRange: DateRangeValue;
-  onDateRangeChange: (value: DateRangeValue) => void;
+  dateRange: PeriodValue;
+  onDateRangeChange: (value: PeriodValue) => void;
 }
 
 const PHASE_STYLES: Record<
@@ -188,12 +189,12 @@ export function WomensHealthSection({
   dateRange,
   onDateRangeChange,
 }: WomensHealthSectionProps) {
-  const { startDate, endDate } = useDateRange(dateRange);
+  const { startIso, endIso } = usePeriodRange(dateRange);
   const pagination = useCursorPagination();
 
   const { data, isLoading } = useMenstrualCycles(userId, {
-    start_date: startDate,
-    end_date: endDate,
+    start_date: startIso,
+    end_date: endIso,
     cursor: pagination.currentCursor ?? undefined,
     limit: 20,
   });
@@ -234,7 +235,7 @@ export function WomensHealthSection({
       </div>
 
       {/* Records table */}
-      <div className="rounded-xl border border-border/60 bg-card/30 overflow-hidden">
+      <Card className="overflow-hidden">
         <SectionHeader
           title="Cycle Records"
           dateRange={dateRange}
@@ -279,7 +280,7 @@ export function WomensHealthSection({
             pagination.goToNextPage(data.pagination.next_cursor)
           }
         />
-      </div>
+      </Card>
     </div>
   );
 }
