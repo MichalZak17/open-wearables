@@ -1,128 +1,135 @@
+import { useMemo } from 'react';
 import { useNavigate } from '@tanstack/react-router';
 import { Trash2 } from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
+import { DataTable, type DataTableFeatures } from '@/components/ui/data-table';
+import type { ColumnDef } from '@tanstack/react-table';
 import type { WebhookEndpoint } from '@/lib/api/types';
 
 interface WebhooksTableProps {
   data: WebhookEndpoint[];
   onDelete: (id: string) => void;
+  isLoading?: boolean;
 }
 
-export function WebhooksTable({ data, onDelete }: WebhooksTableProps) {
+export function WebhooksTable({
+  data,
+  onDelete,
+  isLoading,
+}: WebhooksTableProps) {
   const navigate = useNavigate();
 
-  return (
-    <div className="rounded-2xl border border-border/60 bg-gradient-to-br from-card/80 to-card/40 backdrop-blur-xl overflow-hidden">
-      <Table>
-        <TableHeader>
-          <TableRow className="border-border/60 hover:bg-transparent">
-            <TableHead className="text-muted-foreground">URL</TableHead>
-            <TableHead className="text-muted-foreground">Description</TableHead>
-            <TableHead className="text-muted-foreground">Events</TableHead>
-            <TableHead className="text-muted-foreground">User filter</TableHead>
-            <TableHead className="text-muted-foreground text-right">
-              Actions
-            </TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {data.map((endpoint) => {
-            const goToDetail = () =>
-              navigate({
-                to: '/webhooks/$endpointId',
-                params: { endpointId: endpoint.id },
-              });
+  const columns = useMemo<ColumnDef<DataTableFeatures, WebhookEndpoint>[]>(
+    () => [
+      {
+        id: 'url',
+        header: 'URL',
+        cell: ({ row }) => (
+          <span className="block max-w-[280px] truncate font-mono text-xs text-foreground">
+            {row.original.url}
+          </span>
+        ),
+      },
+      {
+        id: 'description',
+        header: 'Description',
+        cell: ({ row }) => (
+          <span className="block max-w-[220px] truncate text-sm text-foreground/90">
+            {row.original.description ?? (
+              <span className="text-muted-foreground/70">-</span>
+            )}
+          </span>
+        ),
+      },
+      {
+        id: 'events',
+        header: 'Events',
+        cell: ({ row }) => {
+          const types = row.original.filter_types;
+          if (!types?.length) {
             return (
-              <TableRow
-                key={endpoint.id}
-                className="border-border/60 cursor-pointer hover:bg-card"
-                onClick={goToDetail}
+              <Badge
+                variant="outline"
+                className="border-border text-[10px] text-muted-foreground"
               >
-                <TableCell className="font-mono text-xs text-foreground max-w-[280px] truncate">
-                  {endpoint.url}
-                </TableCell>
-                <TableCell className="text-sm text-foreground/90 max-w-[220px] truncate">
-                  {endpoint.description ?? (
-                    <span className="text-muted-foreground/70">-</span>
-                  )}
-                </TableCell>
-                <TableCell>
-                  {endpoint.filter_types?.length ? (
-                    <div className="flex flex-wrap gap-1 max-w-[280px]">
-                      {endpoint.filter_types.slice(0, 3).map((t) => (
-                        <Badge
-                          key={t}
-                          variant="outline"
-                          className="border-border text-foreground/90 text-[10px]"
-                        >
-                          {t}
-                        </Badge>
-                      ))}
-                      {endpoint.filter_types.length > 3 && (
-                        <Badge
-                          variant="outline"
-                          className="border-border text-muted-foreground text-[10px]"
-                        >
-                          +{endpoint.filter_types.length - 3}
-                        </Badge>
-                      )}
-                    </div>
-                  ) : (
-                    <Badge
-                      variant="outline"
-                      className="border-border text-muted-foreground text-[10px]"
-                    >
-                      All events
-                    </Badge>
-                  )}
-                </TableCell>
-                <TableCell>
-                  {endpoint.user_id ? (
-                    <code className="font-mono text-xs text-foreground/90">
-                      {endpoint.user_id.slice(0, 8)}...
-                    </code>
-                  ) : (
-                    <span className="text-xs text-muted-foreground/70">
-                      All users
-                    </span>
-                  )}
-                </TableCell>
-                <TableCell
-                  className="text-right"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => onDelete(endpoint.id)}
-                    title="Delete"
-                    className="text-muted-foreground hover:text-destructive-muted"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </TableCell>
-              </TableRow>
+                All events
+              </Badge>
             );
-          })}
-        </TableBody>
-      </Table>
-      {data.length === 0 && (
-        <div className="p-12 text-center">
-          <p className="text-sm text-muted-foreground">
-            No webhooks configured.
-          </p>
-        </div>
-      )}
-    </div>
+          }
+          return (
+            <div className="flex max-w-[280px] flex-wrap gap-1">
+              {types.slice(0, 3).map((t) => (
+                <Badge
+                  key={t}
+                  variant="outline"
+                  className="border-border text-[10px] text-foreground/90"
+                >
+                  {t}
+                </Badge>
+              ))}
+              {types.length > 3 && (
+                <Badge
+                  variant="outline"
+                  className="border-border text-[10px] text-muted-foreground"
+                >
+                  +{types.length - 3}
+                </Badge>
+              )}
+            </div>
+          );
+        },
+      },
+      {
+        id: 'user_filter',
+        header: 'User filter',
+        cell: ({ row }) =>
+          row.original.user_id ? (
+            <code className="font-mono text-xs text-foreground/90">
+              {row.original.user_id.slice(0, 8)}...
+            </code>
+          ) : (
+            <span className="text-xs text-muted-foreground/70">All users</span>
+          ),
+      },
+      {
+        id: 'actions',
+        header: () => <span className="block text-right">Actions</span>,
+        cell: ({ row }) => (
+          <div
+            className="flex justify-end"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => onDelete(row.original.id)}
+              title="Delete"
+              className="text-muted-foreground hover:text-destructive-muted"
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          </div>
+        ),
+      },
+    ],
+    [onDelete]
+  );
+
+  return (
+    <DataTable
+      card
+      columns={columns}
+      data={data}
+      isLoading={isLoading}
+      onRowClick={(endpoint) =>
+        navigate({
+          to: '/webhooks/$endpointId',
+          params: { endpointId: endpoint.id },
+        })
+      }
+      emptyMessage="No webhooks configured."
+    />
   );
 }

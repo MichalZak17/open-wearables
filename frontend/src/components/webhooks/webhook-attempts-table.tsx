@@ -1,7 +1,9 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { formatDistanceToNow } from 'date-fns';
+import type { ColumnDef } from '@tanstack/react-table';
 
 import { Badge } from '@/components/ui/badge';
+import { DataTable, type DataTableFeatures } from '@/components/ui/data-table';
 import {
   Sheet,
   SheetContent,
@@ -9,14 +11,6 @@ import {
   SheetHeader,
   SheetTitle,
 } from '@/components/ui/sheet';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
 import type { WebhookMessageAttempt } from '@/lib/api/types';
 
 interface WebhookAttemptsTableProps {
@@ -61,72 +55,80 @@ export function WebhookAttemptsTable({
 }: WebhookAttemptsTableProps) {
   const [selected, setSelected] = useState<WebhookMessageAttempt | null>(null);
 
-  if (isLoading) {
-    return (
-      <div className="rounded-2xl border border-border/60 bg-gradient-to-br from-card/80 to-card/40 backdrop-blur-xl p-6 animate-pulse space-y-3">
-        {[1, 2, 3, 4].map((i) => (
-          <div key={i} className="h-12 bg-muted/50 rounded-md" />
-        ))}
-      </div>
-    );
-  }
-
-  if (!attempts.length) {
-    return (
-      <div className="rounded-2xl border border-border/60 bg-gradient-to-br from-card/80 to-card/40 backdrop-blur-xl p-12 text-center">
-        <p className="text-sm text-muted-foreground">No deliveries yet.</p>
-        <p className="text-xs text-muted-foreground/70 mt-1">
-          Send a test event or wait for real activity to see delivery attempts
-          here.
-        </p>
-      </div>
-    );
-  }
+  const columns = useMemo<
+    ColumnDef<DataTableFeatures, WebhookMessageAttempt>[]
+  >(
+    () => [
+      {
+        id: 'status',
+        header: 'Status',
+        cell: ({ row }) => statusBadge(row.original.status),
+      },
+      {
+        id: 'code',
+        header: 'Code',
+        cell: ({ row }) => (
+          <span
+            className={`font-mono text-xs ${statusCodeColor(row.original.responseStatusCode)}`}
+          >
+            {row.original.responseStatusCode || '-'}
+          </span>
+        ),
+      },
+      {
+        id: 'event',
+        header: 'Event',
+        cell: ({ row }) => (
+          <span className="text-xs text-foreground/90">
+            {row.original.msg?.eventType ?? row.original.msgId}
+          </span>
+        ),
+      },
+      {
+        id: 'duration',
+        header: 'Duration',
+        cell: ({ row }) => (
+          <span className="text-xs text-muted-foreground">
+            {row.original.responseDurationMs} ms
+          </span>
+        ),
+      },
+      {
+        id: 'when',
+        header: 'When',
+        cell: ({ row }) => (
+          <span className="text-xs text-muted-foreground">
+            {row.original.timestamp
+              ? formatDistanceToNow(new Date(row.original.timestamp), {
+                  addSuffix: true,
+                })
+              : '-'}
+          </span>
+        ),
+      },
+    ],
+    []
+  );
 
   return (
     <>
-      <div className="rounded-2xl border border-border/60 bg-gradient-to-br from-card/80 to-card/40 backdrop-blur-xl overflow-hidden">
-        <Table>
-          <TableHeader>
-            <TableRow className="border-border/60 hover:bg-transparent">
-              <TableHead className="text-muted-foreground">Status</TableHead>
-              <TableHead className="text-muted-foreground">Code</TableHead>
-              <TableHead className="text-muted-foreground">Event</TableHead>
-              <TableHead className="text-muted-foreground">Duration</TableHead>
-              <TableHead className="text-muted-foreground">When</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {attempts.map((a) => (
-              <TableRow
-                key={a.id}
-                className="border-border/60 cursor-pointer hover:bg-card"
-                onClick={() => setSelected(a)}
-              >
-                <TableCell>{statusBadge(a.status)}</TableCell>
-                <TableCell
-                  className={`font-mono text-xs ${statusCodeColor(a.responseStatusCode)}`}
-                >
-                  {a.responseStatusCode || '-'}
-                </TableCell>
-                <TableCell className="text-xs text-foreground/90">
-                  {a.msg?.eventType ?? a.msgId}
-                </TableCell>
-                <TableCell className="text-xs text-muted-foreground">
-                  {a.responseDurationMs} ms
-                </TableCell>
-                <TableCell className="text-xs text-muted-foreground">
-                  {a.timestamp
-                    ? formatDistanceToNow(new Date(a.timestamp), {
-                        addSuffix: true,
-                      })
-                    : '-'}
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
+      <DataTable
+        card
+        columns={columns}
+        data={attempts}
+        isLoading={isLoading}
+        skeletonRows={4}
+        onRowClick={setSelected}
+        emptyMessage={
+          <div className="space-y-1">
+            <p className="text-sm text-muted-foreground">No deliveries yet.</p>
+            <p className="text-xs text-muted-foreground/70">
+              Send a test event or wait for real activity to see delivery
+              attempts here.
+            </p>
+          </div>
+        }
+      />
 
       <Sheet
         open={!!selected}

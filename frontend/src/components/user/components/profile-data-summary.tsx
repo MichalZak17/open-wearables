@@ -1,17 +1,12 @@
 import { memo, useMemo, useState, type ComponentType } from 'react';
 import { ChevronDown, ChevronUp, Database, Dumbbell, Moon } from 'lucide-react';
+import type { ColumnDef } from '@tanstack/react-table';
 import { Card } from '@/components/ui/card';
+import { DataTable, type DataTableFeatures } from '@/components/ui/data-table';
 import { DataTablePagination } from '@/components/ui/data-table-pagination';
 import { DateFilter } from '@/components/ui/date-filter';
 import { Skeleton } from '@/components/ui/skeleton';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
+import { useClientPagination } from '@/hooks/use-client-pagination';
 import { useUserDataSummary } from '@/hooks/api/use-health';
 import { cn } from '@/lib/utils';
 import { formatCompactNumber } from '@/lib/utils/format';
@@ -251,57 +246,69 @@ function LoadingSkeleton() {
 
 const WORKOUT_TYPES_PAGE_SIZES = [10, 25, 50, 100];
 
+interface WorkoutTypeRow {
+  type: string;
+  count: number;
+}
+
+const WORKOUT_TYPE_COLUMNS: ColumnDef<DataTableFeatures, WorkoutTypeRow>[] = [
+  {
+    id: 'type',
+    header: 'Workout Type',
+    cell: ({ row }) => (
+      <span className="font-medium text-foreground">
+        {formatSeriesType(row.original.type)}
+      </span>
+    ),
+  },
+  {
+    id: 'records',
+    header: () => <span className="block text-right">Records</span>,
+    cell: ({ row }) => (
+      <span className="block text-right tabular-nums text-muted-foreground">
+        {formatCompactNumber(row.original.count)}
+      </span>
+    ),
+  },
+];
+
 // Paginated table of workout types and their record counts, sorted by count.
 function WorkoutTypesTable({ counts }: { counts: Record<string, number> }) {
-  const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(WORKOUT_TYPES_PAGE_SIZES[0]);
 
-  const rows = useMemo(
-    () => Object.entries(counts).sort((a, b) => b[1] - a[1]),
+  const rows = useMemo<WorkoutTypeRow[]>(
+    () =>
+      Object.entries(counts)
+        .sort((a, b) => b[1] - a[1])
+        .map(([type, count]) => ({ type, count })),
     [counts]
   );
 
-  const total = rows.length;
-  const pageCount = Math.ceil(total / pageSize);
-  // Clamp in case the underlying data shrank (e.g. the date filter changed).
-  const currentPage = Math.min(page, Math.max(0, pageCount - 1));
-  const start = currentPage * pageSize;
-  const pageRows = rows.slice(start, start + pageSize);
+  const { page, setPage, pageCount, total, pageItems } = useClientPagination(
+    rows,
+    pageSize
+  );
 
   return (
     <div className="overflow-hidden rounded-lg border border-border">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Workout Type</TableHead>
-            <TableHead className="text-right">Records</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {pageRows.map(([type, count]) => (
-            <TableRow key={type}>
-              <TableCell className="font-medium text-foreground">
-                {formatSeriesType(type)}
-              </TableCell>
-              <TableCell className="text-right tabular-nums text-muted-foreground">
-                {formatCompactNumber(count)}
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-      <DataTablePagination
-        page={currentPage}
-        pageCount={pageCount}
-        pageSize={pageSize}
-        total={total}
-        onPageChange={setPage}
-        onPageSizeChange={(size) => {
-          setPageSize(size);
-          setPage(0);
-        }}
-        pageSizeOptions={WORKOUT_TYPES_PAGE_SIZES}
-        itemLabel="workout types"
+      <DataTable
+        columns={WORKOUT_TYPE_COLUMNS}
+        data={pageItems}
+        footer={
+          <DataTablePagination
+            page={page}
+            pageCount={pageCount}
+            pageSize={pageSize}
+            total={total}
+            onPageChange={setPage}
+            onPageSizeChange={(size) => {
+              setPageSize(size);
+              setPage(0);
+            }}
+            pageSizeOptions={WORKOUT_TYPES_PAGE_SIZES}
+            itemLabel="workout types"
+          />
+        }
       />
     </div>
   );

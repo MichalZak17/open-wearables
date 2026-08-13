@@ -11,6 +11,7 @@ import { WebhookSecretReveal } from '@/components/webhooks/webhook-secret-reveal
 import { WebhookTestEventDialog } from '@/components/webhooks/webhook-test-event-dialog';
 import { WebhookDeleteDialog } from '@/components/webhooks/webhook-delete-dialog';
 import { WebhookAttemptsTable } from '@/components/webhooks/webhook-attempts-table';
+import { CursorPagination } from '@/components/common/cursor-pagination';
 import {
   useUpdateWebhookEndpoint,
   useWebhookAttempts,
@@ -130,11 +131,14 @@ function WebhookDetailPage() {
       <Tabs
         value={tab}
         onValueChange={(v) => setTab(v as 'overview' | 'deliveries')}
+        variant="underline"
       >
-        <TabsList>
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="deliveries">Deliveries</TabsTrigger>
-        </TabsList>
+        <div className="border-b border-border">
+          <TabsList className="border-b-0">
+            <TabsTrigger value="overview">Overview</TabsTrigger>
+            <TabsTrigger value="deliveries">Deliveries</TabsTrigger>
+          </TabsList>
+        </div>
 
         <TabsContent value="overview" className="space-y-6">
           <div className="rounded-2xl border border-border/60 bg-gradient-to-br from-card/80 to-card/40 backdrop-blur-xl p-5 space-y-3">
@@ -189,23 +193,18 @@ function WebhookDetailPage() {
             params={attemptsParams}
             onChange={handleFilterChange}
           />
-          <DeliveriesPagination
-            hasPrev={hasPrev}
-            hasNext={hasNext}
-            onPrev={handlePrev}
-            onNext={handleNext}
-            isLoading={attempts.isLoading}
-          />
           <WebhookAttemptsTable
             attempts={attempts.data?.data ?? []}
             isLoading={attempts.isLoading}
           />
-          <DeliveriesPagination
-            hasPrev={hasPrev}
-            hasNext={hasNext}
-            onPrev={handlePrev}
-            onNext={handleNext}
-            isLoading={attempts.isLoading}
+          <CursorPagination
+            currentPage={iteratorStack.length + 1}
+            hasPrevPage={hasPrev}
+            hasNextPage={hasNext}
+            isFetching={attempts.isLoading}
+            onPrevPage={handlePrev}
+            onNextPage={handleNext}
+            itemLabel="deliveries"
           />
         </TabsContent>
       </Tabs>
@@ -379,42 +378,6 @@ function DeliveriesFilters({
           </div>
         )}
       </div>
-    </div>
-  );
-}
-
-function DeliveriesPagination({
-  hasPrev,
-  hasNext,
-  onPrev,
-  onNext,
-  isLoading,
-}: {
-  hasPrev: boolean;
-  hasNext: boolean;
-  onPrev: () => void;
-  onNext: () => void;
-  isLoading: boolean;
-}) {
-  if (!hasPrev && !hasNext) return null;
-  return (
-    <div className="flex justify-end gap-2">
-      <Button
-        variant="outline"
-        size="sm"
-        onClick={onPrev}
-        disabled={!hasPrev || isLoading}
-      >
-        Previous
-      </Button>
-      <Button
-        variant="outline"
-        size="sm"
-        onClick={onNext}
-        disabled={!hasNext || isLoading}
-      >
-        Next
-      </Button>
     </div>
   );
 }

@@ -9,6 +9,8 @@ import {
   type SortingState,
   type PaginationState,
 } from '@tanstack/react-table';
+import { Card } from '@/components/ui/card';
+import { DataTableSkeleton } from '@/components/ui/data-table-skeleton';
 import {
   Table,
   TableBody,
@@ -17,6 +19,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { cn } from '@/lib/utils';
 
 const features = tableFeatures({
   rowSortingFeature,
@@ -30,20 +33,39 @@ export interface DataTableProps<TData extends RowData> {
   columns: ColumnDef<DataTableFeatures, TData>[];
   data: TData[];
   /** Total number of server-side pages (manual pagination). */
-  pageCount: number;
-  sorting: SortingState;
-  onSortingChange: Dispatch<SetStateAction<SortingState>>;
-  pagination: PaginationState;
-  onPaginationChange: Dispatch<SetStateAction<PaginationState>>;
+  pageCount?: number;
+  /** Sorting state. Omit for a static (non-sortable) table. */
+  sorting?: SortingState;
+  onSortingChange?: Dispatch<SetStateAction<SortingState>>;
+  /** Pagination state. Omit to render every row (no client pagination). */
+  pagination?: PaginationState;
+  onPaginationChange?: Dispatch<SetStateAction<PaginationState>>;
   /** Invoked when a row is activated (click / Enter / Space). */
   onRowClick?: (row: TData) => void;
   emptyMessage?: ReactNode;
+  /** When true, render a {@link DataTableSkeleton} instead of the rows. */
+  isLoading?: boolean;
+  /** Row count for the loading skeleton. */
+  skeletonRows?: number;
+  /** Wrap the table (and any toolbar/footer) in a bordered {@link Card}. */
+  card?: boolean;
+  /** Extra classes for the Card wrapper (only applies when `card`). */
+  className?: string;
+  /** Content rendered above the table (e.g. search/filters), inside the card. */
+  toolbar?: ReactNode;
+  /** Content rendered below the table (e.g. a pagination footer). */
+  footer?: ReactNode;
 }
 
 /**
  * Reusable table built on the shadcn "base" data-table pattern
  * (@tanstack/react-table v9 `useTable` + the shared Table primitives).
- * Configured for server-side (manual) sorting and pagination.
+ *
+ * Sorting and pagination are optional: pass the state + change handlers for
+ * server-side (manual) sorting/pagination, or omit them for a static table.
+ * Pass `card`/`toolbar`/`footer`/`isLoading` to let the component own the full
+ * shell (card wrapper, toolbar, pagination footer, loading skeleton) instead of
+ * each caller rebuilding it.
  */
 export function DataTable<TData extends RowData>({
   columns,
@@ -55,23 +77,38 @@ export function DataTable<TData extends RowData>({
   onPaginationChange,
   onRowClick,
   emptyMessage = 'No results.',
+  isLoading,
+  skeletonRows,
+  card,
+  className,
+  toolbar,
+  footer,
 }: DataTableProps<TData>) {
   const table = useTable({
     features,
     data,
     columns,
-    state: { sorting, pagination },
+    state: {
+      sorting: sorting ?? [],
+      // Without a pagination prop, show every row (a single big page).
+      pagination: pagination ?? {
+        pageIndex: 0,
+        pageSize: Math.max(data.length, 1),
+      },
+    },
     onSortingChange,
     onPaginationChange,
-    manualPagination: true,
-    manualSorting: true,
-    pageCount,
+    manualPagination: Boolean(onPaginationChange),
+    manualSorting: Boolean(onSortingChange),
+    pageCount: pageCount ?? -1,
   });
 
   const rows = table.getRowModel().rows;
   const interactive = Boolean(onRowClick);
 
-  return (
+  const body = isLoading ? (
+    <DataTableSkeleton columns={columns.length} rows={skeletonRows} />
+  ) : (
     <Table>
       <TableHeader>
         {table.getHeaderGroups().map((headerGroup) => (
@@ -131,5 +168,25 @@ export function DataTable<TData extends RowData>({
         )}
       </TableBody>
     </Table>
+  );
+
+  if (!card && !toolbar && !footer) {
+    return body;
+  }
+
+  const content = (
+    <>
+      {toolbar && <div className="border-b border-border p-4">{toolbar}</div>}
+      {body}
+      {footer}
+    </>
+  );
+
+  return card ? (
+    <Card className={cn('overflow-hidden rounded-xl', className)}>
+      {content}
+    </Card>
+  ) : (
+    content
   );
 }
