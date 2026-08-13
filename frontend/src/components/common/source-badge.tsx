@@ -40,11 +40,11 @@ export function SourceBadge({ provider, className = '' }: SourceBadgeProps) {
   return (
     <span
       className={cn(
-        'inline-flex items-center gap-1.5 rounded-md border border-border/60 bg-muted/60 px-2 py-0.5 text-[10px] font-medium leading-none text-muted-foreground',
+        'inline-flex items-center gap-2 rounded-md border border-border/60 bg-muted/60 px-2.5 py-1 text-xs font-medium leading-none text-muted-foreground',
         className
       )}
     >
-      <span className={cn('h-1.5 w-1.5 shrink-0 rounded-full', dot)} />
+      <span className={cn('h-2 w-2 shrink-0 rounded-full', dot)} />
       {providerLabel(provider)}
     </span>
   );

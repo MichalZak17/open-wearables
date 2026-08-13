@@ -140,7 +140,7 @@ function SyncRunRow({ run }: { run: SyncRunSummary }) {
           : PlayCircle;
 
   return (
-    <div className="flex items-center justify-between gap-3 rounded-lg border bg-card/40 p-2.5">
+    <div className="flex items-center justify-between gap-3 rounded-lg border bg-card-elevated/50 p-2.5">
       <div className="flex items-center gap-2 min-w-0">
         <Icon
           className={cn(
@@ -720,7 +720,7 @@ function ConnectionCardComponent({
                 !isBackfillInProgress &&
                 !isPermanentlyFailed && (
                   <Button
-                    variant="outline"
+                    variant="secondary"
                     size="sm"
                     className="flex-1"
                     onClick={() =>
@@ -751,7 +751,7 @@ function ConnectionCardComponent({
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button
-                          variant="outline"
+                          variant="secondary"
                           size="sm"
                           className="flex-1"
                           disabled={isSyncingHistorical}
@@ -791,7 +791,7 @@ function ConnectionCardComponent({
 
                     {connection.live_sync_mode !== 'webhook' && (
                       <Button
-                        variant="outline"
+                        variant="secondary"
                         size="sm"
                         className="flex-1"
                         onClick={() => synchronizeDataFromProvider()}

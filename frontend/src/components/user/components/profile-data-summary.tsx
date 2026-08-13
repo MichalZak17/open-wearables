@@ -43,7 +43,7 @@ function StatCard({
   iconClass?: string;
 }) {
   return (
-    <div className="group relative overflow-hidden rounded-xl border border-border/60 bg-card/40 p-5 transition-colors hover:border-border hover:bg-card/60">
+    <div className="group relative overflow-hidden rounded-xl border border-border/60 bg-card-elevated/50 p-5 transition-colors hover:border-border hover:bg-card-elevated/70">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <p className="text-3xl font-bold leading-none tabular-nums text-foreground">
@@ -87,7 +87,7 @@ const TypeGrid = memo(function TypeGrid({
       {displayed.map(([type, count], i) => (
         <div
           key={type}
-          className="flex flex-col gap-2 rounded-xl border border-border/60 bg-card/40 p-4 transition-colors duration-200 hover:bg-card/60"
+          className="flex flex-col gap-2 rounded-xl border border-border/60 bg-card-elevated/50 p-4 transition-colors duration-200 hover:bg-card-elevated/70"
         >
           <span
             className={cn(
@@ -112,12 +112,13 @@ const TypeGrid = memo(function TypeGrid({
   );
 });
 
-// Record-type composition, distinguished by ink weight rather than hue to stay
-// within the neutral graphite palette. Order matches the summary stat cards.
+// Record-type composition, colour-coded so each type reads at a glance and the
+// legend matches the summary stat-card icons above (data points = indigo,
+// workouts = emerald, sleep = violet).
 const RECORD_SEGMENTS = [
-  { key: 'data_points', label: 'data points', bar: 'bg-foreground/85' },
-  { key: 'workout_count', label: 'workouts', bar: 'bg-foreground/55' },
-  { key: 'sleep_count', label: 'sleep', bar: 'bg-foreground/30' },
+  { key: 'data_points', label: 'data points', bar: 'bg-chart-1' },
+  { key: 'workout_count', label: 'workouts', bar: 'bg-chart-4' },
+  { key: 'sleep_count', label: 'sleep', bar: 'bg-chart-5' },
 ] as const;
 
 // One comparative row per provider: a share bar (this provider's slice of the
@@ -146,7 +147,7 @@ const ProviderRow = memo(function ProviderRow({
   const hasSeries = seriesEntries.length > 0;
 
   return (
-    <div className="rounded-xl border border-border/60 bg-card/40 transition-colors hover:border-border/80">
+    <div className="rounded-xl border border-border/60 bg-card-elevated/50 transition-colors hover:border-border/80">
       <div className="px-4 py-3.5">
         <div className="flex items-center justify-between gap-3">
           <div className="flex min-w-0 items-center gap-2.5">
@@ -370,19 +371,19 @@ export function DataSummarySection({ userId }: DataSummarySectionProps) {
                 icon={Database}
                 label="Data Points"
                 value={data.total_data_points}
-                iconClass="border-primary/30 bg-primary/10 text-primary-muted"
+                iconClass="border-chart-1/30 bg-chart-1/10 text-chart-1"
               />
               <StatCard
                 icon={Dumbbell}
                 label="Workouts"
                 value={data.total_workouts}
-                iconClass="border-secondary-muted/30 bg-secondary-muted/10 text-secondary-muted"
+                iconClass="border-chart-4/30 bg-chart-4/10 text-chart-4"
               />
               <StatCard
                 icon={Moon}
                 label="Sleep Events"
                 value={data.total_sleep_events}
-                iconClass="border-accent-muted/30 bg-accent-muted/10 text-accent-muted"
+                iconClass="border-chart-5/30 bg-chart-5/10 text-chart-5"
               />
             </div>
 
