@@ -1,12 +1,12 @@
 import type { ComponentType } from 'react';
 import { createFileRoute, redirect } from '@tanstack/react-router';
-import { CredentialsTab } from './-credentials-tab';
-import { ProvidersTab } from './-providers-tab';
-import { PrioritiesTab } from './-priorities-tab';
-import { DataLifecycleTab } from './-data-lifecycle-tab';
-import { TeamTab } from './-team-tab';
-import { SecurityTab } from './-security-tab';
-import { SeedDataTab } from './-seed-data-tab';
+import { CredentialsTab } from '@/components/settings/credentials-tab';
+import { ProvidersTab } from '@/components/settings/providers-tab';
+import { PrioritiesTab } from '@/components/settings/priorities-tab';
+import { DataLifecycleTab } from '@/components/settings/data-lifecycle-tab';
+import { TeamTab } from '@/components/settings/team-tab';
+import { SecurityTab } from '@/components/settings/security-tab';
+import { SeedDataTab } from '@/components/settings/seed-data-tab';
 
 /** Maps the `$tab` URL segment to the tab's content. Keep in sync with the
  * tab bar in the settings layout ({@link ../settings.tsx}). */

@@ -36,7 +36,7 @@ import { ROUTES } from '@/lib/constants/routes';
 import { API_CONFIG } from '@/lib/api/config';
 import { copyToClipboard } from '@/lib/utils/clipboard';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { UserDetailProvider } from './-user-detail-context';
+import { UserDetailProvider } from '@/components/user/user-detail-context';
 import {
   DateRangeSelector,
   presetPeriod,

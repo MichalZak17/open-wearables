@@ -6,7 +6,7 @@ import { SleepSection } from '@/components/user/sleep';
 import { BodySection } from '@/components/user/body';
 import { ScoresSection } from '@/components/user/scores';
 import { WomensHealthSection } from '@/components/user/womens-health';
-import { useUserDetailContext } from '../-user-detail-context';
+import { useUserDetailContext } from '@/components/user/user-detail-context';
 
 /** Valid `$tab` segments. Keep in sync with the tab bar in the layout
  * ({@link ../$userId.tsx}). */
