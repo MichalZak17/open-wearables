@@ -101,6 +101,15 @@
     --chart-4: 158 64% 52%; /* Emerald 400 */
     --chart-5: 258 90% 76%; /* Violet 400 */
 
+    /* === SLEEP STAGES (cool depth ramp) ===
+       Tuned for near-black surfaces: saturation and lightness pulled back so
+       nothing glares. "Light" especially is a calmer blue rather than an
+       electric cyan, since it fills roughly half of every bar. */
+    --sleep-deep: 244 68% 63%; /* indigo — anchor */
+    --sleep-rem: 260 70% 74%; /* airy violet */
+    --sleep-light: 205 74% 60%; /* calm sky blue (de-neoned) */
+    --sleep-awake: 220 12% 54%; /* muted slate — reads as "not asleep" */
+
     /* === BORDER RADIUS === */
     --radius: 0.75rem; /* 12px */
 
@@ -182,6 +191,12 @@
     --chart-3: 221 83% 53%; /* Blue 600 */
     --chart-4: 160 84% 39%; /* Emerald 500 */
     --chart-5: 262 83% 58%; /* Violet 600 */
+
+    /* Sleep stages: the original swatches, kept as-is for the light theme. */
+    --sleep-deep: 239 84% 67%; /* indigo-500 #6366f1 */
+    --sleep-rem: 255 92% 76%; /* violet-400 #a78bfa */
+    --sleep-light: 198 93% 60%; /* sky-400 #38bdf8 */
+    --sleep-awake: 215 20% 65%; /* slate-400 #94a3b8 */
   }
 }
 
@@ -314,12 +329,21 @@
 }
 
 @layer utilities {
-  /* Grid background for login */
+  /* Grid background for login — theme-aware, derived from the foreground color
+     so it reads as faint light lines on dark and faint dark lines on light. */
   .bg-grid {
     background-size: 40px 40px;
     background-image:
-      linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
-      linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+      linear-gradient(
+        to right,
+        hsl(var(--foreground) / 0.04) 1px,
+        transparent 1px
+      ),
+      linear-gradient(
+        to bottom,
+        hsl(var(--foreground) / 0.04) 1px,
+        transparent 1px
+      );
   }
 }
 

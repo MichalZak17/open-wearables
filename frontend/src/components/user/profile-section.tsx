@@ -494,69 +494,113 @@ const TypeGrid = memo(function TypeGrid({
   );
 });
 
-const ProviderCard = memo(function ProviderCard({
+// Record-type composition, distinguished by ink weight rather than hue to stay
+// within the neutral graphite palette. Order matches the summary stat cards.
+const RECORD_SEGMENTS = [
+  { key: 'data_points', label: 'data points', bar: 'bg-foreground/85' },
+  { key: 'workout_count', label: 'workouts', bar: 'bg-foreground/55' },
+  { key: 'sleep_count', label: 'sleep', bar: 'bg-foreground/30' },
+] as const;
+
+// One comparative row per provider: a share bar (this provider's slice of the
+// user's total records) segmented by record type, with a self-labeling
+// breakdown and optional series-type drill-down. Replaces the old accordion
+// that hid three numbers behind a click and offered no cross-provider
+// comparison.
+const ProviderRow = memo(function ProviderRow({
   provider,
+  grandTotal,
+  isPrimary,
 }: {
   provider: ProviderDataCount;
+  grandTotal: number;
+  isPrimary: boolean;
 }) {
   const [expanded, setExpanded] = useState(false);
-  const totalRecords =
-    provider.data_points + provider.workout_count + provider.sleep_count;
+  const segments = [
+    provider.data_points,
+    provider.workout_count,
+    provider.sleep_count,
+  ];
+  const total = segments.reduce((a, b) => a + b, 0);
+  const share = grandTotal > 0 ? (total / grandTotal) * 100 : 0;
   const seriesEntries = Object.entries(provider.series_counts);
+  const hasSeries = seriesEntries.length > 0;
 
   return (
-    <div className="overflow-hidden rounded-xl border border-border/60 bg-card/40 transition-colors hover:border-border/80">
-      <Button
-        type="button"
-        variant="secondary"
-        onClick={() => setExpanded(!expanded)}
-        className="flex h-auto w-full items-center justify-between rounded-none border-0 px-4 py-3.5 text-left"
-      >
-        <div className="flex items-center gap-3">
-          <div className="flex h-7 w-7 items-center justify-center rounded-md border border-border/60 bg-muted/40">
-            <span className="text-[10px] font-bold text-foreground/70">
+    <div className="rounded-xl border border-border/60 bg-card/40 transition-colors hover:border-border/80">
+      <div className="px-4 py-3.5">
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex min-w-0 items-center gap-2.5">
+            <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md border border-border/60 bg-muted/40 text-[10px] font-bold text-foreground/70">
               {formatProvider(provider.provider).charAt(0)}
-            </span>
-          </div>
-          <div>
-            <span className="text-sm font-medium text-foreground">
+            </div>
+            <span className="truncate text-sm font-medium text-foreground">
               {formatProvider(provider.provider)}
             </span>
-            <span className="ml-2 rounded-full border border-border/60 bg-muted/40 px-1.5 py-0.5 text-[10px] tabular-nums text-muted-foreground">
-              {formatCompactNumber(totalRecords)}
+            {isPrimary && (
+              <span className="shrink-0 rounded-full border border-border/60 bg-muted/40 px-1.5 py-0.5 text-[9px] font-medium uppercase tracking-wide text-muted-foreground">
+                Primary
+              </span>
+            )}
+          </div>
+          <div className="flex shrink-0 items-baseline gap-1.5">
+            <span className="text-sm font-semibold tabular-nums text-foreground">
+              {formatCompactNumber(total)}
+            </span>
+            <span className="w-9 text-right text-xs tabular-nums text-muted-foreground">
+              {share.toFixed(0)}%
             </span>
           </div>
         </div>
-        {expanded ? (
-          <ChevronUp className="h-4 w-4 text-muted-foreground" />
-        ) : (
-          <ChevronDown className="h-4 w-4 text-muted-foreground" />
-        )}
-      </Button>
 
-      {expanded && (
-        <div className="space-y-4 border-t border-border/60 px-4 py-4">
-          <div className="grid grid-cols-3 gap-2">
-            {[
-              { label: 'Data Points', value: provider.data_points },
-              { label: 'Workouts', value: provider.workout_count },
-              { label: 'Sleep', value: provider.sleep_count },
-            ].map(({ label, value }) => (
-              <div
-                key={label}
-                className="flex flex-col items-center gap-1 rounded-xl border border-border/60 bg-card/40 p-3 text-center"
-              >
-                <p className="text-xl font-bold tabular-nums leading-none text-foreground">
-                  {formatCompactNumber(value)}
-                </p>
-                <p className="text-[11px] text-muted-foreground">{label}</p>
-              </div>
-            ))}
+        {/* Track = user's total records; fill = this provider, split by type. */}
+        <div className="mt-2.5 flex h-2 w-full overflow-hidden rounded-full bg-muted/60">
+          <div className="flex h-full" style={{ width: `${share}%` }}>
+            {RECORD_SEGMENTS.map(({ key, bar }, i) =>
+              segments[i] > 0 ? (
+                <div
+                  key={key}
+                  className={bar}
+                  style={{ width: `${(segments[i] / total) * 100}%` }}
+                />
+              ) : null
+            )}
           </div>
+        </div>
 
-          {seriesEntries.length > 0 && (
-            <TypeGrid counts={provider.series_counts} />
+        <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-muted-foreground">
+          {RECORD_SEGMENTS.map(({ key, label, bar }, i) =>
+            segments[i] > 0 ? (
+              <span key={key} className="inline-flex items-center gap-1.5">
+                <span className={cn('h-1.5 w-1.5 rounded-full', bar)} />
+                <span className="tabular-nums text-foreground/80">
+                  {formatCompactNumber(segments[i])}
+                </span>
+                {label}
+              </span>
+            ) : null
           )}
+          {hasSeries && (
+            <button
+              type="button"
+              onClick={() => setExpanded((e) => !e)}
+              className="ml-auto inline-flex items-center gap-1 transition-colors hover:text-foreground/90"
+            >
+              {expanded ? 'Hide series' : `${seriesEntries.length} series types`}
+              {expanded ? (
+                <ChevronUp className="h-3 w-3" />
+              ) : (
+                <ChevronDown className="h-3 w-3" />
+              )}
+            </button>
+          )}
+        </div>
+      </div>
+
+      {expanded && hasSeries && (
+        <div className="border-t border-border/60 px-4 py-4">
+          <TypeGrid counts={provider.series_counts} />
         </div>
       )}
     </div>
@@ -642,6 +686,19 @@ function DataSummarySection({ userId }: DataSummarySectionProps) {
   const [range, setRange] = useState<DataSummaryParams | undefined>(undefined);
   const { data, isLoading } = useUserDataSummary(userId, range);
   const [showAllTypes, setShowAllTypes] = useState(false);
+
+  // Rank providers by total records so the comparison reads top-down, and keep
+  // the grand total for each row's share calculation.
+  const providers = useMemo(() => {
+    const rows = (data?.by_provider ?? []).map((provider) => ({
+      provider,
+      total:
+        provider.data_points + provider.workout_count + provider.sleep_count,
+    }));
+    rows.sort((a, b) => b.total - a.total);
+    const grandTotal = rows.reduce((sum, r) => sum + r.total, 0);
+    return { rows, grandTotal };
+  }, [data?.by_provider]);
 
   const isEmpty =
     data &&
@@ -732,14 +789,25 @@ function DataSummarySection({ userId }: DataSummarySectionProps) {
             )}
 
             {/* Provider breakdown */}
-            {data.by_provider.length > 0 && (
+            {providers.rows.length > 0 && (
               <div>
-                <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  By Provider
-                </h3>
+                <div className="mb-3 flex items-baseline justify-between">
+                  <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                    By Provider
+                  </h3>
+                  <span className="text-[11px] tabular-nums text-muted-foreground">
+                    {providers.rows.length}{' '}
+                    {providers.rows.length === 1 ? 'source' : 'sources'}
+                  </span>
+                </div>
                 <div className="space-y-2">
-                  {data.by_provider.map((provider) => (
-                    <ProviderCard key={provider.provider} provider={provider} />
+                  {providers.rows.map((row, i) => (
+                    <ProviderRow
+                      key={row.provider.provider}
+                      provider={row.provider}
+                      grandTotal={providers.grandTotal}
+                      isPrimary={i === 0 && providers.rows.length > 1}
+                    />
                   ))}
                 </div>
               </div>

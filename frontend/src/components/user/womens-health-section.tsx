@@ -1,6 +1,6 @@
 import { format } from 'date-fns';
 import { Heart, Trash2 } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   useMenstrualCycles,
   useDeleteMenstrualCycle,
@@ -19,7 +19,6 @@ import type { MenstrualCycleRecord } from '@/lib/api/types';
 interface WomensHealthSectionProps {
   userId: string;
   dateRange: PeriodValue;
-  onDateRangeChange: (value: PeriodValue) => void;
 }
 
 const PHASE_STYLES: Record<
@@ -187,10 +186,16 @@ function CycleCard({
 export function WomensHealthSection({
   userId,
   dateRange,
-  onDateRangeChange,
 }: WomensHealthSectionProps) {
   const { startIso, endIso } = usePeriodRange(dateRange);
   const pagination = useCursorPagination();
+
+  // Reset pagination when the (global) date range changes so a stale cursor
+  // from a previous window doesn't carry over.
+  const { reset: resetPagination } = pagination;
+  useEffect(() => {
+    resetPagination();
+  }, [dateRange, resetPagination]);
 
   const { data, isLoading } = useMenstrualCycles(userId, {
     start_date: startIso,
@@ -236,14 +241,7 @@ export function WomensHealthSection({
 
       {/* Records table */}
       <Card className="overflow-hidden">
-        <SectionHeader
-          title="Cycle Records"
-          dateRange={dateRange}
-          onDateRangeChange={(v) => {
-            pagination.reset();
-            onDateRangeChange(v);
-          }}
-        />
+        <SectionHeader title="Cycle Records" />
 
         {isLoading ? (
           <div className="divide-y divide-border/40">

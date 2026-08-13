@@ -44,7 +44,12 @@ export function DataSourceInfo({
     source.source && source.source !== source.provider ? source.source : null;
 
   return (
-    <div className={cn('flex min-w-0 items-center gap-1.5', className)}>
+    <div
+      className={cn(
+        'flex min-w-0 items-center gap-1.5 leading-none',
+        className
+      )}
+    >
       <Tooltip>
         <TooltipTrigger asChild>
           <span className="shrink-0">

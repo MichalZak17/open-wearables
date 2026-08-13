@@ -45,7 +45,6 @@ import type { ActivitySummary } from '@/lib/api/types';
 interface ActivitySectionProps {
   userId: string;
   dateRange: PeriodValue;
-  onDateRangeChange: (value: PeriodValue) => void;
 }
 
 const DAYS_PER_PAGE = 10;
@@ -327,7 +326,6 @@ function ActivityDayRow({ summary }: { summary: ActivitySummary }) {
 export function ActivitySection({
   userId,
   dateRange,
-  onDateRangeChange,
 }: ActivitySectionProps) {
   // Cursor-based pagination for activity days
   const pagination = useCursorPagination();
@@ -411,11 +409,7 @@ export function ActivitySection({
     <div className="space-y-6">
       {/* Summary Section */}
       <Card className="overflow-hidden">
-        <SectionHeader
-          title="Activity Summary"
-          dateRange={dateRange}
-          onDateRangeChange={onDateRangeChange}
-        />
+        <SectionHeader title="Activity Summary" />
 
         <div className="p-6">
           {summaryLoading ? (

@@ -415,13 +415,11 @@ function ScoresSkeleton() {
 interface ScoresSectionProps {
   userId: string;
   dateRange: PeriodValue;
-  onDateRangeChange: (value: PeriodValue) => void;
 }
 
 export function ScoresSection({
   userId,
   dateRange,
-  onDateRangeChange,
 }: ScoresSectionProps) {
   const { startIso, endIso } = usePeriodRange(dateRange);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
@@ -488,11 +486,7 @@ export function ScoresSection({
     <div className="space-y-6">
       {/* Summary + Chart Section */}
       <Card className="overflow-hidden">
-        <SectionHeader
-          title="Health Scores"
-          dateRange={dateRange}
-          onDateRangeChange={onDateRangeChange}
-        />
+        <SectionHeader title="Health Scores" />
 
         <div className="px-6 pt-4">
           <p className="text-xs text-yellow-300/90 bg-yellow-500/10 border border-yellow-500/20 rounded-md px-3 py-2">

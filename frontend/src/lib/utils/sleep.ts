@@ -13,11 +13,30 @@ export type SleepStageKey = 'deep' | 'rem' | 'light' | 'awake';
 /**
  * Color classes for sleep stages (Tailwind)
  */
+// Cohesive cool ramp (indigo → violet → sky) for the sleep phases, with a
+// muted slate for awake so it reads as "not asleep". Colour is spent only here,
+// where the stage encoding is meaningful, rather than on decorative icons.
+//
+// The concrete hues live in styles.css as `--sleep-*` variables so each theme
+// gets its own values: a de-neoned, low-glare ramp on the dark canvas and a
+// deeper, more saturated ramp on white.
 export const SLEEP_STAGE_COLORS: Record<SleepStageKey, string> = {
-  deep: 'bg-indigo-500',
-  rem: 'bg-purple-500',
-  light: 'bg-sky-400',
-  awake: 'bg-zinc-500',
+  deep: 'bg-[hsl(var(--sleep-deep))]',
+  rem: 'bg-[hsl(var(--sleep-rem))]',
+  light: 'bg-[hsl(var(--sleep-light))]',
+  awake: 'bg-[hsl(var(--sleep-awake))]',
+};
+
+/**
+ * CSS-value equivalents of {@link SLEEP_STAGE_COLORS} for chart fills, since
+ * Recharts needs concrete color values rather than Tailwind classes. These
+ * resolve the same theme-aware `--sleep-*` variables.
+ */
+export const SLEEP_STAGE_CHART_COLORS: Record<SleepStageKey, string> = {
+  deep: 'hsl(var(--sleep-deep))',
+  rem: 'hsl(var(--sleep-rem))',
+  light: 'hsl(var(--sleep-light))',
+  awake: 'hsl(var(--sleep-awake))',
 };
 
 /**

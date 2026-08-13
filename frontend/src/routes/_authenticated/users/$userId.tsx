@@ -38,6 +38,7 @@ import { WorkoutSection } from '@/components/user/workout-section';
 import { ScoresSection } from '@/components/user/scores-section';
 import { WomensHealthSection } from '@/components/user/womens-health-section';
 import {
+  DateRangeSelector,
   presetPeriod,
   type PeriodValue,
 } from '@/components/ui/date-range-selector';
@@ -86,6 +87,17 @@ interface TabConfig {
   content: ReactNode;
 }
 
+// Tabs whose content is scoped by the shared date range, and therefore show the
+// global selector in the tab bar. Profile and Body don't consume a historical
+// range, so the selector is hidden for them.
+const DATE_RANGE_TABS = new Set([
+  'workouts',
+  'activity',
+  'sleep',
+  'scores',
+  'womens-health',
+]);
+
 function UserDetailPage() {
   const { userId } = Route.useParams();
   const navigate = useNavigate();
@@ -95,21 +107,9 @@ function UserDetailPage() {
   // Tab state
   const [activeTab, setActiveTab] = useState('profile');
 
-  // Date range states for different sections
-  const [workoutDateRange, setWorkoutDateRange] = useState<PeriodValue>(
-    presetPeriod(30)
-  );
-  const [activityDateRange, setActivityDateRange] = useState<PeriodValue>(
-    presetPeriod(30)
-  );
-  const [sleepDateRange, setSleepDateRange] = useState<PeriodValue>(
-    presetPeriod(30)
-  );
-  const [scoresDateRange, setScoresDateRange] = useState<PeriodValue>(
-    presetPeriod(30)
-  );
-  const [womensHealthDateRange, setWomensHealthDateRange] =
-    useState<PeriodValue>(presetPeriod(90));
+  // One date range shared by every data tab. The selector lives in the tab bar
+  // (see below) and is hidden on tabs that don't consume a historical range.
+  const [dateRange, setDateRange] = useState<PeriodValue>(presetPeriod(30));
 
   const { mutate: deleteUser, isPending: isDeleting } = useDeleteUser();
   const { handleUpload, isUploading: isUploadingFile } = useAppleXmlUpload();
@@ -140,37 +140,19 @@ function UserDetailPage() {
         id: 'workouts',
         label: 'Workouts',
         icon: Dumbbell,
-        content: (
-          <WorkoutSection
-            userId={userId}
-            dateRange={workoutDateRange}
-            onDateRangeChange={setWorkoutDateRange}
-          />
-        ),
+        content: <WorkoutSection userId={userId} dateRange={dateRange} />,
       },
       {
         id: 'activity',
         label: 'Activity',
         icon: Activity,
-        content: (
-          <ActivitySection
-            userId={userId}
-            dateRange={activityDateRange}
-            onDateRangeChange={setActivityDateRange}
-          />
-        ),
+        content: <ActivitySection userId={userId} dateRange={dateRange} />,
       },
       {
         id: 'sleep',
         label: 'Sleep',
         icon: Moon,
-        content: (
-          <SleepSection
-            userId={userId}
-            dateRange={sleepDateRange}
-            onDateRangeChange={setSleepDateRange}
-          />
-        ),
+        content: <SleepSection userId={userId} dateRange={dateRange} />,
       },
       {
         id: 'body',
@@ -182,13 +164,7 @@ function UserDetailPage() {
         id: 'scores',
         label: 'Scores',
         icon: Trophy,
-        content: (
-          <ScoresSection
-            userId={userId}
-            dateRange={scoresDateRange}
-            onDateRangeChange={setScoresDateRange}
-          />
-        ),
+        content: <ScoresSection userId={userId} dateRange={dateRange} />,
       },
       ...(dataSummary?.has_womens_health_data
         ? [
@@ -197,25 +173,13 @@ function UserDetailPage() {
               label: "Women's Health",
               icon: Heart,
               content: (
-                <WomensHealthSection
-                  userId={userId}
-                  dateRange={womensHealthDateRange}
-                  onDateRangeChange={setWomensHealthDateRange}
-                />
+                <WomensHealthSection userId={userId} dateRange={dateRange} />
               ),
             },
           ]
         : []),
     ],
-    [
-      userId,
-      workoutDateRange,
-      activityDateRange,
-      sleepDateRange,
-      scoresDateRange,
-      womensHealthDateRange,
-      dataSummary?.has_womens_health_data,
-    ]
+    [userId, dateRange, dataSummary?.has_womens_health_data]
   );
 
   const handleCopyPairLink = async () => {
@@ -417,14 +381,23 @@ function UserDetailPage() {
 
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} variant="underline">
-        <TabsList>
-          {tabs.map((tab) => (
-            <TabsTrigger key={tab.id} value={tab.id} className="gap-2">
-              <tab.icon className="h-4 w-4" />
-              {tab.label}
-            </TabsTrigger>
-          ))}
-        </TabsList>
+        <div className="flex items-center justify-between gap-4 border-b border-border">
+          <TabsList className="border-b-0">
+            {tabs.map((tab) => (
+              <TabsTrigger key={tab.id} value={tab.id} className="gap-2">
+                <tab.icon className="h-4 w-4" />
+                {tab.label}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+          {DATE_RANGE_TABS.has(activeTab) && (
+            <DateRangeSelector
+              value={dateRange}
+              onChange={setDateRange}
+              className="shrink-0"
+            />
+          )}
+        </div>
         {tabs.map((tab) => (
           <TabsContent key={tab.id} value={tab.id} className="space-y-6">
             {tab.content}

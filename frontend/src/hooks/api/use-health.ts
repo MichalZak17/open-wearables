@@ -83,6 +83,9 @@ export function useWorkouts(userId: string, params?: WorkoutsParams) {
     queryKey: queryKeys.health.workouts(userId, params),
     queryFn: () => healthService.getWorkouts(userId, params),
     enabled: !!userId,
+    // Keep showing the previous result while a new date range refetches so the
+    // summary/list don't flash their loading skeleton on every range change.
+    placeholderData: (previousData) => previousData,
   });
 }
 
@@ -95,6 +98,7 @@ export function useTimeSeries(userId: string, params: TimeSeriesParams) {
     queryKey: queryKeys.health.timeseries(userId, params),
     queryFn: () => healthService.getTimeSeries(userId, params),
     enabled: !!userId && !!params.start_time && !!params.end_time,
+    placeholderData: (previousData) => previousData,
   });
 }
 
@@ -107,6 +111,7 @@ export function useSleepSessions(userId: string, params: SleepSessionsParams) {
     queryKey: queryKeys.health.sleepSessions(userId, params),
     queryFn: () => healthService.getSleepSessions(userId, params),
     enabled: !!userId && !!params.start_date && !!params.end_date,
+    placeholderData: (previousData) => previousData,
   });
 }
 
@@ -119,6 +124,7 @@ export function useSleepSummaries(userId: string, params: SummaryParams) {
     queryKey: queryKeys.health.sleepSummaries(userId, params),
     queryFn: () => healthService.getSleepSummaries(userId, params),
     enabled: !!userId && !!params.start_date && !!params.end_date,
+    placeholderData: (previousData) => previousData,
   });
 }
 
@@ -185,6 +191,7 @@ export function useActivitySummaries(userId: string, params: SummaryParams) {
     queryKey: queryKeys.health.activitySummaries(userId, params),
     queryFn: () => healthService.getActivitySummaries(userId, params),
     enabled: !!userId && !!params.start_date && !!params.end_date,
+    placeholderData: (previousData) => previousData,
   });
 }
 
@@ -200,6 +207,7 @@ export function useMenstrualCycles(
     queryKey: queryKeys.health.menstrualCycles(userId, params),
     queryFn: () => healthService.getMenstrualCycles(userId, params),
     enabled: !!userId && !!params.start_date && !!params.end_date,
+    placeholderData: (previousData) => previousData,
   });
 }
 
@@ -260,6 +268,7 @@ export function useHealthScores(userId: string, params: HealthScoreParams) {
     queryKey: queryKeys.health.healthScores(userId, params),
     queryFn: () => healthService.getHealthScores(userId, params),
     enabled: !!userId && !!params.start_date && !!params.end_date,
+    placeholderData: (previousData) => previousData,
   });
 }
 

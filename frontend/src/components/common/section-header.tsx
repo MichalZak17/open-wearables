@@ -1,30 +1,17 @@
-import {
-  DateRangeSelector,
-  type PeriodValue,
-} from '@/components/ui/date-range-selector';
-
 interface SectionHeaderProps {
   title: string;
-  dateRange?: PeriodValue;
-  onDateRangeChange?: (value: PeriodValue) => void;
   rightContent?: React.ReactNode;
 }
 
 /**
- * A reusable section header with optional date range selector.
+ * A reusable card section header: a title on the left and optional content on
+ * the right. The date-range selector now lives globally in the tab bar, so it
+ * is no longer a responsibility of this component.
  */
-export function SectionHeader({
-  title,
-  dateRange,
-  onDateRangeChange,
-  rightContent,
-}: SectionHeaderProps) {
+export function SectionHeader({ title, rightContent }: SectionHeaderProps) {
   return (
     <div className="px-6 py-4 border-b border-border/60 flex items-center justify-between">
       <h3 className="text-sm font-medium text-foreground">{title}</h3>
-      {dateRange !== undefined && onDateRangeChange && (
-        <DateRangeSelector value={dateRange} onChange={onDateRangeChange} />
-      )}
       {rightContent}
     </div>
   );

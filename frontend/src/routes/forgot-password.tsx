@@ -8,7 +8,9 @@ import {
   forgotPasswordSchema,
   type ForgotPasswordFormData,
 } from '@/lib/validation/auth.schemas';
-import { Activity, ArrowLeft, Mail, CheckCircle, Loader2 } from 'lucide-react';
+import { ArrowLeft, Mail, CheckCircle, Loader2 } from 'lucide-react';
+import { LogoMark } from '@/components/common/logo-mark';
+import { AuthShell } from '@/components/auth/auth-shell';
 import { DEFAULT_REDIRECTS, ROUTES } from '@/lib/constants/routes';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -46,47 +48,41 @@ function ForgotPasswordPage() {
   };
 
   return (
-    <div className="bg-black text-zinc-400 antialiased h-screen w-screen overflow-hidden selection:bg-zinc-800 selection:text-white flex items-center justify-center p-4 sm:p-8 relative">
-      {/* Background */}
-      <div className="absolute inset-0 bg-grid opacity-30" />
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[400px] bg-indigo-900/20 rounded-full blur-[120px] pointer-events-none" />
-
+    <AuthShell>
       {/* Card */}
-      <div className="w-full max-w-md bg-black border border-zinc-900/80 rounded-2xl overflow-hidden shadow-[0_0_50px_-12px_rgba(0,0,0,0.8)] relative z-10 backdrop-blur-sm">
+      <div className="relative z-10 w-full max-w-md overflow-hidden rounded-2xl border border-border bg-card shadow-2xl">
         {/* Header */}
-        <div className="p-8 border-b border-zinc-900">
-          <div className="flex items-center gap-2 mb-8">
-            <div className="w-6 h-6 bg-white rounded flex items-center justify-center">
-              <Activity className="text-black w-4 h-4" />
-            </div>
-            <span className="text-sm font-medium text-white tracking-tight uppercase">
+        <div className="border-b border-border p-8">
+          <div className="mb-8 flex items-center gap-2.5">
+            <LogoMark className="size-8 text-foreground" />
+            <span className="text-lg font-bold tracking-tight text-foreground">
               Open Wearables
             </span>
           </div>
 
           {!isSubmitted ? (
             <>
-              <h1 className="text-2xl font-medium tracking-tight text-white">
-                Reset Password
+              <h1 className="text-2xl font-semibold tracking-tight text-foreground">
+                Reset password
               </h1>
-              <p className="text-sm text-zinc-500 mt-2">
+              <p className="mt-2 text-sm text-muted-foreground">
                 Enter your email and we'll send you a reset link
               </p>
             </>
           ) : (
-            <div className="text-center py-4">
-              <div className="w-16 h-16 mx-auto mb-6 bg-emerald-500/20 rounded-full flex items-center justify-center">
-                <CheckCircle className="w-8 h-8 text-emerald-400" />
+            <div className="py-4 text-center">
+              <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-success/10">
+                <CheckCircle className="h-8 w-8 text-success" />
               </div>
-              <h2 className="text-xl font-medium text-white mb-2">
-                Check Your Email
+              <h2 className="mb-2 text-xl font-medium text-foreground">
+                Check your email
               </h2>
-              <p className="text-sm text-zinc-500">
+              <p className="text-sm text-muted-foreground">
                 If an account exists with that email, we've sent password reset
                 instructions.
               </p>
-              <div className="flex items-center justify-center gap-2 text-zinc-600 text-xs mt-4">
-                <Mail className="w-4 h-4" />
+              <div className="mt-4 flex items-center justify-center gap-2 text-xs text-foreground-subtle">
+                <Mail className="h-4 w-4" />
                 <span>Check your inbox and spam folder</span>
               </div>
             </div>
@@ -95,26 +91,29 @@ function ForgotPasswordPage() {
 
         {/* Form */}
         {!isSubmitted && (
-          <div className="p-8 space-y-6">
+          <div className="space-y-6 p-8">
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
               <div className="space-y-1.5">
-                <Label htmlFor="email" className="text-xs text-zinc-300">
+                <Label
+                  htmlFor="email"
+                  className="text-xs text-foreground-muted"
+                >
                   Email address
                 </Label>
-                <div className="relative group">
+                <div className="group relative">
                   <Input
                     type="email"
                     id="email"
                     {...form.register('email')}
-                    className="bg-zinc-900/50 border-zinc-800 pr-10"
+                    className="pr-10"
                     placeholder="you@example.com"
                   />
-                  <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none opacity-0 group-focus-within:opacity-100 transition-opacity">
-                    <Mail className="w-4 h-4 text-zinc-500" />
+                  <div className="pointer-events-none absolute inset-y-0 right-3 flex items-center opacity-0 transition-opacity group-focus-within:opacity-100">
+                    <Mail className="h-4 w-4 text-muted-foreground" />
                   </div>
                 </div>
                 {form.formState.errors.email && (
-                  <p className="text-xs text-red-500">
+                  <p className="text-xs text-destructive">
                     {form.formState.errors.email.message}
                   </p>
                 )}
@@ -131,7 +130,7 @@ function ForgotPasswordPage() {
                     Sending...
                   </>
                 ) : (
-                  'Send Reset Link'
+                  'Send reset link'
                 )}
               </Button>
             </form>
@@ -139,16 +138,16 @@ function ForgotPasswordPage() {
         )}
 
         {/* Footer */}
-        <div className="px-8 py-6 border-t border-zinc-900 bg-zinc-950/50">
+        <div className="border-t border-border bg-background-elevated px-8 py-6">
           <Link
             to={ROUTES.login}
-            className="flex items-center justify-center gap-2 text-sm text-zinc-500 hover:text-white transition-colors"
+            className="flex items-center justify-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
           >
-            <ArrowLeft className="w-4 h-4" />
+            <ArrowLeft className="h-4 w-4" />
             Back to sign in
           </Link>
         </div>
       </div>
-    </div>
+    </AuthShell>
   );
 }

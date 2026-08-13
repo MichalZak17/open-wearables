@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { format } from 'date-fns';
 import { CartesianGrid, Line, LineChart, XAxis, YAxis } from 'recharts';
 import {
@@ -16,10 +16,7 @@ import {
   useUserDataSummary,
 } from '@/hooks/api/use-health';
 import { useCursorPagination } from '@/hooks/use-cursor-pagination';
-import {
-  usePeriodRange,
-  useAllTimeRangeTimestamp,
-} from '@/hooks/use-date-range';
+import { usePeriodRange } from '@/hooks/use-date-range';
 import type { PeriodValue } from '@/components/ui/date-range-selector';
 import { Card } from '@/components/ui/card';
 import {
@@ -55,7 +52,6 @@ import { EventDeleteDialog } from '@/components/common/event-delete-dialog';
 interface WorkoutSectionProps {
   userId: string;
   dateRange: PeriodValue;
-  onDateRangeChange: (value: PeriodValue) => void;
 }
 
 // Number of columns in the workout table – used for full-width expanded rows.
@@ -272,26 +268,36 @@ const PAGE_SIZE = 10;
 export function WorkoutSection({
   userId,
   dateRange,
-  onDateRangeChange,
 }: WorkoutSectionProps) {
   // Cursor-based pagination for workouts
   const pagination = useCursorPagination();
 
-  // All-time workout total – cursor responses don't carry a count, so we source
-  // it from the data summary to show "Page X of Y" (the list is always all-time).
-  const { data: dataSummary } = useUserDataSummary(userId);
-
   // Date range hooks
-  const allTimeRange = useAllTimeRangeTimestamp();
-  const { startDate, endDate } = usePeriodRange(dateRange);
+  const { startDate, endDate, startIso, endIso } = usePeriodRange(dateRange);
 
-  // Fetch workouts for current page
+  // Reset pagination when the date range changes so a stale cursor from a
+  // previous window doesn't carry over into the new one.
+  const { reset: resetPagination } = pagination;
+  useEffect(() => {
+    resetPagination();
+  }, [dateRange, resetPagination]);
+
+  // Workout total within the selected range – cursor responses don't carry a
+  // count, so we source it from the (range-scoped) data summary to show
+  // "Page X of Y".
+  const { data: rangeSummary } = useUserDataSummary(userId, {
+    start_date: startIso,
+    end_date: endIso,
+  });
+
+  // Fetch workouts for the current page, scoped to the selected date range.
   const {
     data: workoutsResponse,
     isLoading,
     isFetching,
   } = useWorkouts(userId, {
-    ...allTimeRange,
+    start_date: dateToTimestamp(startDate),
+    end_date: dateToTimestamp(endDate),
     limit: PAGE_SIZE,
     cursor: pagination.currentCursor ?? undefined,
     sort_order: 'desc',
@@ -328,11 +334,7 @@ export function WorkoutSection({
     <div className="space-y-6">
       {/* Summary Section */}
       <Card className="overflow-hidden">
-        <SectionHeader
-          title="Summary"
-          dateRange={dateRange}
-          onDateRangeChange={onDateRangeChange}
-        />
+        <SectionHeader title="Summary" />
 
         <div className="p-6">
           {summaryLoading ? (
@@ -412,7 +414,7 @@ export function WorkoutSection({
       {/* Workout List Section */}
       <Card className="overflow-hidden">
         <SectionHeader
-          title="All Workouts"
+          title="Workouts"
           rightContent={
             !isLoading && hasData ? (
               <span className="text-xs text-muted-foreground">
@@ -465,7 +467,7 @@ export function WorkoutSection({
                 isFetching={isFetching}
                 onPrevPage={handlePrevPage}
                 onNextPage={handleNextPage}
-                totalItems={dataSummary?.total_workouts}
+                totalItems={rangeSummary?.total_workouts}
                 pageSize={PAGE_SIZE}
                 itemLabel="workouts"
               />

@@ -1,5 +1,4 @@
 import { createFileRoute, redirect, Link } from '@tanstack/react-router';
-import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useAuth } from '@/hooks/use-auth';
@@ -9,17 +8,12 @@ import {
   registerSchema,
   type RegisterFormData,
 } from '@/lib/validation/auth.schemas';
-import {
-  Activity,
-  ArrowRight,
-  Mail,
-  Eye,
-  EyeOff,
-  ShieldCheck,
-  Zap,
-  Bot,
-  Loader2,
-} from 'lucide-react';
+import { ArrowRight, Mail, ShieldCheck, Zap, Bot, Loader2 } from 'lucide-react';
+import { LogoMark } from '@/components/common/logo-mark';
+import { AuthShell } from '@/components/auth/auth-shell';
+import { AuthDivider } from '@/components/auth/auth-divider';
+import { SsoButton } from '@/components/auth/sso-button';
+import { PasswordInput } from '@/components/auth/password-input';
 import { DEFAULT_REDIRECTS, ROUTES } from '@/lib/constants/routes';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -34,10 +28,26 @@ export const Route = createFileRoute('/register')({
   },
 });
 
+const FEATURES = [
+  {
+    icon: Zap,
+    title: 'Quick Setup',
+    description: 'Get started in minutes with our SDK',
+  },
+  {
+    icon: ShieldCheck,
+    title: 'Enterprise Ready',
+    description: 'SOC 2, HIPAA compliant infrastructure',
+  },
+  {
+    icon: Bot,
+    title: 'AI-Powered Insights',
+    description: 'Natural language automations and insights',
+  },
+] as const;
+
 function RegisterPage() {
   const { register: registerUser, isRegistering } = useAuth();
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const form = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
@@ -53,32 +63,26 @@ function RegisterPage() {
   };
 
   return (
-    <div className="bg-black text-zinc-400 antialiased h-screen w-screen overflow-hidden selection:bg-zinc-800 selection:text-white flex items-center justify-center p-4 sm:p-8 relative">
-      {/* Background */}
-      <div className="absolute inset-0 bg-grid opacity-30" />
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[400px] bg-indigo-900/20 rounded-full blur-[120px] pointer-events-none" />
-
-      {/* Card Container */}
-      <div className="w-full max-w-[1100px] h-full max-h-[700px] grid lg:grid-cols-2 bg-black border border-zinc-900/80 rounded-2xl overflow-hidden shadow-[0_0_50px_-12px_rgba(0,0,0,0.8)] relative z-10 backdrop-blur-sm">
-        {/* Left: Form */}
-        <div className="flex flex-col justify-between p-8 sm:p-12 border-b lg:border-b-0 lg:border-r border-zinc-900 bg-black/90">
+    <AuthShell>
+      {/* Card container */}
+      <div className="relative z-10 grid h-full max-h-[700px] w-full max-w-[1100px] overflow-hidden rounded-2xl border border-border bg-card shadow-2xl lg:grid-cols-2">
+        {/* Left: form */}
+        <div className="flex flex-col justify-between border-b border-border bg-card p-8 sm:p-12 lg:border-b-0 lg:border-r">
           {/* Logo */}
-          <div className="flex items-center gap-2">
-            <div className="w-6 h-6 bg-white rounded flex items-center justify-center">
-              <Activity className="text-black w-4 h-4" />
-            </div>
-            <span className="text-sm font-medium text-white tracking-tight uppercase">
+          <div className="flex items-center gap-2.5">
+            <LogoMark className="size-8 text-foreground" />
+            <span className="text-lg font-bold tracking-tight text-foreground">
               Open Wearables
             </span>
           </div>
 
           {/* Form */}
-          <div className="w-full max-w-sm mx-auto space-y-6 my-auto py-8">
+          <div className="mx-auto my-auto w-full max-w-sm space-y-6 py-8">
             <div className="space-y-2">
-              <h1 className="text-2xl font-medium tracking-tight text-white">
+              <h1 className="text-2xl font-semibold tracking-tight text-foreground">
                 Create account
               </h1>
-              <p className="text-sm text-zinc-500">
+              <p className="text-sm text-muted-foreground">
                 Sign up to start building with Open Wearables
               </p>
             </div>
@@ -86,23 +90,26 @@ function RegisterPage() {
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
               {/* Email */}
               <div className="space-y-1.5">
-                <Label htmlFor="email" className="text-xs text-zinc-300">
+                <Label
+                  htmlFor="email"
+                  className="text-xs text-foreground-muted"
+                >
                   Email address
                 </Label>
-                <div className="relative group">
+                <div className="group relative">
                   <Input
                     type="email"
                     id="email"
                     {...form.register('email')}
-                    className="bg-zinc-900/50 border-zinc-800 pr-10"
+                    className="pr-10"
                     placeholder="developer@example.com"
                   />
-                  <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none opacity-0 group-focus-within:opacity-100 transition-opacity">
-                    <Mail className="w-4 h-4 text-zinc-500" />
+                  <div className="pointer-events-none absolute inset-y-0 right-3 flex items-center opacity-0 transition-opacity group-focus-within:opacity-100">
+                    <Mail className="h-4 w-4 text-muted-foreground" />
                   </div>
                 </div>
                 {form.formState.errors.email && (
-                  <p className="text-xs text-red-500">
+                  <p className="text-xs text-destructive">
                     {form.formState.errors.email.message}
                   </p>
                 )}
@@ -110,31 +117,19 @@ function RegisterPage() {
 
               {/* Password */}
               <div className="space-y-1.5">
-                <Label htmlFor="password" className="text-xs text-zinc-300">
+                <Label
+                  htmlFor="password"
+                  className="text-xs text-foreground-muted"
+                >
                   Password
                 </Label>
-                <div className="relative group">
-                  <Input
-                    type={showPassword ? 'text' : 'password'}
-                    id="password"
-                    {...form.register('password')}
-                    className="bg-zinc-900/50 border-zinc-800 pr-10"
-                    placeholder="At least 8 characters"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute inset-y-0 right-3 flex items-center text-zinc-500 hover:text-zinc-300 transition-colors"
-                  >
-                    {showPassword ? (
-                      <EyeOff className="w-4 h-4" />
-                    ) : (
-                      <Eye className="w-4 h-4" />
-                    )}
-                  </button>
-                </div>
+                <PasswordInput
+                  id="password"
+                  {...form.register('password')}
+                  placeholder="At least 8 characters"
+                />
                 {form.formState.errors.password && (
-                  <p className="text-xs text-red-500">
+                  <p className="text-xs text-destructive">
                     {form.formState.errors.password.message}
                   </p>
                 )}
@@ -144,32 +139,17 @@ function RegisterPage() {
               <div className="space-y-1.5">
                 <Label
                   htmlFor="confirmPassword"
-                  className="text-xs text-zinc-300"
+                  className="text-xs text-foreground-muted"
                 >
                   Confirm password
                 </Label>
-                <div className="relative group">
-                  <Input
-                    type={showConfirmPassword ? 'text' : 'password'}
-                    id="confirmPassword"
-                    {...form.register('confirmPassword')}
-                    className="bg-zinc-900/50 border-zinc-800 pr-10"
-                    placeholder="Confirm your password"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    className="absolute inset-y-0 right-3 flex items-center text-zinc-500 hover:text-zinc-300 transition-colors"
-                  >
-                    {showConfirmPassword ? (
-                      <EyeOff className="w-4 h-4" />
-                    ) : (
-                      <Eye className="w-4 h-4" />
-                    )}
-                  </button>
-                </div>
+                <PasswordInput
+                  id="confirmPassword"
+                  {...form.register('confirmPassword')}
+                  placeholder="Confirm your password"
+                />
                 {form.formState.errors.confirmPassword && (
-                  <p className="text-xs text-red-500">
+                  <p className="text-xs text-destructive">
                     {form.formState.errors.confirmPassword.message}
                   </p>
                 )}
@@ -185,17 +165,21 @@ function RegisterPage() {
                 ) : (
                   <>
                     Create account
-                    <ArrowRight className="w-4 h-4 opacity-60" />
+                    <ArrowRight className="h-4 w-4 opacity-60" />
                   </>
                 )}
               </Button>
             </form>
 
-            <p className="text-center text-sm text-zinc-500">
+            <AuthDivider>Or</AuthDivider>
+
+            <SsoButton />
+
+            <p className="text-center text-sm text-muted-foreground">
               Already have an account?{' '}
               <Link
                 to={ROUTES.login}
-                className="text-white hover:text-zinc-200 transition-colors"
+                className="font-medium text-foreground transition-colors hover:text-primary-muted"
               >
                 Sign in
               </Link>
@@ -203,80 +187,63 @@ function RegisterPage() {
           </div>
 
           {/* Footer */}
-          <div className="flex items-center justify-between text-xs text-zinc-600">
+          <div className="flex items-center justify-between text-xs text-foreground-subtle">
             <p>{getCopyrightText()}</p>
             <div className="flex gap-3">
-              <a href="#" className="hover:text-zinc-400 transition-colors">
+              <a
+                href="#"
+                className="transition-colors hover:text-foreground-muted"
+              >
                 Privacy
               </a>
-              <a href="#" className="hover:text-zinc-400 transition-colors">
+              <a
+                href="#"
+                className="transition-colors hover:text-foreground-muted"
+              >
                 Terms
               </a>
             </div>
           </div>
         </div>
 
-        {/* Right: Features */}
-        <div className="hidden lg:flex flex-col relative bg-zinc-950/50 overflow-hidden">
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] bg-indigo-500/10 rounded-full blur-[80px]" />
+        {/* Right: features */}
+        <div className="relative hidden flex-col overflow-hidden bg-background-elevated lg:flex">
+          <div className="absolute left-1/2 top-1/2 h-[300px] w-[300px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary/[0.05] blur-[80px]" />
 
-          <div className="relative h-full flex flex-col items-center justify-center p-8">
+          <div className="relative flex h-full flex-col items-center justify-center p-8">
             <div className="w-full max-w-[350px] space-y-6">
-              <h2 className="text-xl font-medium text-white text-center">
+              <h2 className="text-center text-xl font-medium text-foreground">
                 Start Building Today
               </h2>
-              <p className="text-sm text-zinc-500 text-center">
+              <p className="text-center text-sm text-muted-foreground">
                 Create your developer account and integrate health data from any
                 wearable device.
               </p>
 
-              <div className="space-y-4 mt-8">
-                <div className="flex items-start gap-4 p-4 bg-zinc-900/50 border border-zinc-800 rounded-lg">
-                  <div className="w-8 h-8 bg-zinc-800 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <Zap className="w-4 h-4 text-zinc-400" />
+              <div className="mt-8 space-y-4">
+                {FEATURES.map((feature) => (
+                  <div
+                    key={feature.title}
+                    className="flex items-start gap-4 rounded-lg border border-border bg-card p-4"
+                  >
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-secondary">
+                      <feature.icon className="h-4 w-4 text-secondary-foreground" />
+                    </div>
+                    <div>
+                      <h3 className="text-sm font-medium text-foreground">
+                        {feature.title}
+                      </h3>
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        {feature.description}
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <h3 className="text-sm font-medium text-white">
-                      Quick Setup
-                    </h3>
-                    <p className="text-xs text-zinc-500 mt-1">
-                      Get started in minutes with our SDK
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-4 p-4 bg-zinc-900/50 border border-zinc-800 rounded-lg">
-                  <div className="w-8 h-8 bg-zinc-800 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <ShieldCheck className="w-4 h-4 text-zinc-400" />
-                  </div>
-                  <div>
-                    <h3 className="text-sm font-medium text-white">
-                      Enterprise Ready
-                    </h3>
-                    <p className="text-xs text-zinc-500 mt-1">
-                      SOC 2, HIPAA compliant infrastructure
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-4 p-4 bg-zinc-900/50 border border-zinc-800 rounded-lg">
-                  <div className="w-8 h-8 bg-zinc-800 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <Bot className="w-4 h-4 text-zinc-400" />
-                  </div>
-                  <div>
-                    <h3 className="text-sm font-medium text-white">
-                      AI-Powered Insights
-                    </h3>
-                    <p className="text-xs text-zinc-500 mt-1">
-                      Natural language automations and insights
-                    </p>
-                  </div>
-                </div>
+                ))}
               </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
+    </AuthShell>
   );
 }
