@@ -1,74 +1,39 @@
-import { createFileRoute, Link, useNavigate } from '@tanstack/react-router';
-import { useEffect, useRef, useState } from 'react';
-import { ArrowLeft, ChevronDown, Copy, Send, Trash2 } from 'lucide-react';
-import { toast } from 'sonner';
+import {
+  createFileRoute,
+  Link,
+  Outlet,
+  useLocation,
+  useNavigate,
+} from '@tanstack/react-router';
+import { useState } from 'react';
+import { ArrowLeft, Send, Trash2 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { WebhookForm } from '@/components/webhooks/webhook-form';
-import { WebhookSecretReveal } from '@/components/webhooks/webhook-secret-reveal';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { WebhookTestEventDialog } from '@/components/webhooks/webhook-test-event-dialog';
 import { WebhookDeleteDialog } from '@/components/webhooks/webhook-delete-dialog';
-import { WebhookAttemptsTable } from '@/components/webhooks/webhook-attempts-table';
-import { CursorPagination } from '@/components/common/cursor-pagination';
-import {
-  useUpdateWebhookEndpoint,
-  useWebhookAttempts,
-  useWebhookEndpoint,
-  useWebhookEventTypes,
-} from '@/hooks/api/use-webhooks';
+import { useWebhookEndpoint } from '@/hooks/api/use-webhooks';
 import { ROUTES } from '@/lib/constants/routes';
-import type { WebhookAttemptsParams } from '@/lib/api/types';
 
 export const Route = createFileRoute('/_authenticated/webhooks/$endpointId')({
-  component: WebhookDetailPage,
+  component: WebhookDetailLayout,
 });
 
-function WebhookDetailPage() {
+function WebhookDetailLayout() {
   const { endpointId } = Route.useParams();
   const navigate = useNavigate();
+  const { pathname } = useLocation();
   const endpoint = useWebhookEndpoint(endpointId);
-  const update = useUpdateWebhookEndpoint();
 
-  const [tab, setTab] = useState<'overview' | 'deliveries'>('overview');
   const [isTestOpen, setIsTestOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
-
-  const [attemptsParams, setAttemptsParams] = useState<WebhookAttemptsParams>({
-    limit: 50,
-  });
-  const [iteratorStack, setIteratorStack] = useState<(string | null)[]>([]);
-
-  const attempts = useWebhookAttempts(endpointId, attemptsParams);
-
-  const hasPrev = iteratorStack.length > 0;
-  const hasNext = !attempts.data?.done && !!attempts.data?.iterator;
-
-  function handleNext() {
-    const nextIterator = attempts.data?.iterator ?? null;
-    setIteratorStack((s) => [...s, attemptsParams.iterator ?? null]);
-    setAttemptsParams((p) => ({ ...p, iterator: nextIterator }));
-  }
-
-  function handlePrev() {
-    const stack = [...iteratorStack];
-    const prevIterator = stack.pop() ?? null;
-    setIteratorStack(stack);
-    setAttemptsParams((p) => ({ ...p, iterator: prevIterator }));
-  }
-
-  function handleFilterChange(patch: Partial<WebhookAttemptsParams>) {
-    setIteratorStack([]);
-    setAttemptsParams((p) => ({ ...p, ...patch, iterator: null }));
-  }
 
   if (endpoint.isLoading) {
     return (
       <div className="p-8">
-        <div className="rounded-2xl border border-border/60 bg-gradient-to-br from-card/80 to-card/40 backdrop-blur-xl p-6 animate-pulse space-y-3">
-          <div className="h-6 w-1/3 bg-muted rounded" />
-          <div className="h-32 bg-muted/50 rounded" />
+        <div className="space-y-3 rounded-2xl border border-border/60 bg-gradient-to-br from-card/80 to-card/40 p-6 backdrop-blur-xl animate-pulse">
+          <div className="h-6 w-1/3 rounded bg-muted" />
+          <div className="h-32 rounded bg-muted/50" />
         </div>
       </div>
     );
@@ -83,7 +48,7 @@ function WebhookDetailPage() {
             Back
           </Button>
         </Link>
-        <div className="rounded-2xl border border-border/60 bg-gradient-to-br from-card/80 to-card/40 backdrop-blur-xl p-8 text-center">
+        <div className="rounded-2xl border border-border/60 bg-gradient-to-br from-card/80 to-card/40 p-8 text-center backdrop-blur-xl">
           <p className="text-muted-foreground">
             Webhook not found or failed to load.
           </p>
@@ -93,6 +58,8 @@ function WebhookDetailPage() {
   }
 
   const ep = endpoint.data;
+  const segment = pathname.split('/').pop() ?? '';
+  const activeTab = segment === 'deliveries' ? 'deliveries' : 'overview';
 
   return (
     <div className="p-8">
@@ -103,23 +70,23 @@ function WebhookDetailPage() {
         </Button>
       </Link>
 
-      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6">
+      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0">
-          <h1 className="text-xl font-medium text-foreground truncate">
+          <h1 className="truncate text-xl font-medium text-foreground">
             {ep.description || 'Webhook endpoint'}
           </h1>
-          <code className="font-mono text-xs text-muted-foreground break-all">
+          <code className="break-all font-mono text-xs text-muted-foreground">
             {ep.url}
           </code>
         </div>
-        <div className="flex gap-2 shrink-0">
+        <div className="flex shrink-0 gap-2">
           <Button variant="outline" onClick={() => setIsTestOpen(true)}>
             <Send className="h-4 w-4" />
             Send test
           </Button>
           <Button
             variant="outline"
-            className="text-destructive-muted border-destructive-muted/30 hover:bg-destructive-muted/10"
+            className="border-destructive-muted/30 text-destructive-muted hover:bg-destructive-muted/10"
             onClick={() => setIsDeleteOpen(true)}
           >
             <Trash2 className="h-4 w-4" />
@@ -129,8 +96,13 @@ function WebhookDetailPage() {
       </div>
 
       <Tabs
-        value={tab}
-        onValueChange={(v) => setTab(v as 'overview' | 'deliveries')}
+        value={activeTab}
+        onValueChange={(tab) =>
+          navigate({
+            to: '/webhooks/$endpointId/$tab',
+            params: { endpointId, tab },
+          })
+        }
         variant="underline"
       >
         <div className="border-b border-border">
@@ -139,75 +111,11 @@ function WebhookDetailPage() {
             <TabsTrigger value="deliveries">Deliveries</TabsTrigger>
           </TabsList>
         </div>
-
-        <TabsContent value="overview" className="space-y-6">
-          <div className="rounded-2xl border border-border/60 bg-gradient-to-br from-card/80 to-card/40 backdrop-blur-xl p-5 space-y-3">
-            <p className="text-[10px] uppercase tracking-wide text-muted-foreground font-medium">
-              Endpoint ID
-            </p>
-            <div className="flex items-center gap-2">
-              <code className="font-mono text-xs text-foreground/90 flex-1 break-all">
-                {ep.id}
-              </code>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="shrink-0 h-7 w-7 p-0 text-muted-foreground hover:text-foreground/90"
-                onClick={() => {
-                  navigator.clipboard.writeText(ep.id);
-                  toast.success('Endpoint ID copied');
-                }}
-              >
-                <Copy className="h-3.5 w-3.5" />
-              </Button>
-            </div>
-          </div>
-
-          <div className="rounded-2xl border border-border/60 bg-gradient-to-br from-card/80 to-card/40 backdrop-blur-xl p-5">
-            <h3 className="text-sm font-medium text-foreground mb-4">
-              Configuration
-            </h3>
-            <WebhookForm
-              initial={ep}
-              submitLabel="Save changes"
-              isSubmitting={update.isPending}
-              onSubmit={(data) =>
-                update.mutate({
-                  id: ep.id,
-                  data: {
-                    url: data.url,
-                    description: data.description ?? null,
-                    filter_types: data.filter_types ?? null,
-                    user_id: data.user_id ?? null,
-                  },
-                })
-              }
-            />
-          </div>
-
-          <WebhookSecretReveal endpointId={ep.id} />
-        </TabsContent>
-
-        <TabsContent value="deliveries" className="space-y-4">
-          <DeliveriesFilters
-            params={attemptsParams}
-            onChange={handleFilterChange}
-          />
-          <WebhookAttemptsTable
-            attempts={attempts.data?.data ?? []}
-            isLoading={attempts.isLoading}
-          />
-          <CursorPagination
-            currentPage={iteratorStack.length + 1}
-            hasPrevPage={hasPrev}
-            hasNextPage={hasNext}
-            isFetching={attempts.isLoading}
-            onPrevPage={handlePrev}
-            onNextPage={handleNext}
-            itemLabel="deliveries"
-          />
-        </TabsContent>
       </Tabs>
+
+      <div className="mt-6">
+        <Outlet />
+      </div>
 
       <WebhookTestEventDialog
         endpointId={ep.id}
@@ -220,164 +128,6 @@ function WebhookDetailPage() {
         onClose={() => setIsDeleteOpen(false)}
         onDeleted={() => navigate({ to: ROUTES.webhooks })}
       />
-    </div>
-  );
-}
-
-const STATUS_OPTIONS = [
-  { label: 'All statuses', value: '' },
-  { label: 'Success', value: '0' },
-  { label: 'Pending', value: '1' },
-  { label: 'Failed', value: '2' },
-  { label: 'Sending', value: '3' },
-];
-
-const LIMIT_OPTIONS = [25, 50, 100, 250];
-
-function DeliveriesFilters({
-  params,
-  onChange,
-}: {
-  params: WebhookAttemptsParams;
-  onChange: (patch: Partial<WebhookAttemptsParams>) => void;
-}) {
-  const eventTypes = useWebhookEventTypes();
-  const [etOpen, setEtOpen] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
-  const selected = new Set(params.event_types ?? []);
-
-  useEffect(() => {
-    if (!etOpen) return;
-    function handleClick(e: MouseEvent) {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(e.target as Node)
-      ) {
-        setEtOpen(false);
-      }
-    }
-    document.addEventListener('mousedown', handleClick);
-    return () => document.removeEventListener('mousedown', handleClick);
-  }, [etOpen]);
-
-  function toggleEventType(name: string) {
-    const next = new Set(selected);
-    if (next.has(name)) {
-      next.delete(name);
-    } else {
-      next.add(name);
-    }
-    onChange({ event_types: next.size > 0 ? Array.from(next) : undefined });
-  }
-
-  function clearEventTypes() {
-    onChange({ event_types: undefined });
-  }
-
-  return (
-    <div className="flex flex-wrap gap-3 items-center">
-      <select
-        className="bg-card border border-border text-foreground/90 text-xs rounded-md px-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-ring"
-        value={params.status ?? ''}
-        onChange={(e) =>
-          onChange({
-            status: e.target.value !== '' ? Number(e.target.value) : null,
-          })
-        }
-      >
-        {STATUS_OPTIONS.map((o) => (
-          <option key={o.value} value={o.value}>
-            {o.label}
-          </option>
-        ))}
-      </select>
-
-      <select
-        className="bg-card border border-border text-foreground/90 text-xs rounded-md px-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-ring"
-        value={params.limit ?? 50}
-        onChange={(e) => onChange({ limit: Number(e.target.value) })}
-      >
-        {LIMIT_OPTIONS.map((n) => (
-          <option key={n} value={n}>
-            {n} per page
-          </option>
-        ))}
-      </select>
-
-      {/* Event type multi-select */}
-      <div className="relative" ref={dropdownRef}>
-        <button
-          type="button"
-          onClick={() => setEtOpen((o) => !o)}
-          className="flex items-center gap-1.5 bg-card border border-border text-foreground/90 text-xs rounded-md px-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-ring hover:border-border-hover"
-        >
-          {selected.size > 0 ? (
-            <span className="text-foreground">
-              {selected.size} event type{selected.size > 1 ? 's' : ''}
-            </span>
-          ) : (
-            'All event types'
-          )}
-          <ChevronDown className="h-3 w-3 text-muted-foreground" />
-        </button>
-
-        {etOpen && (
-          <div className="absolute z-20 top-full mt-1 left-0 w-72 bg-card border border-border rounded-lg shadow-xl overflow-hidden">
-            <div className="flex items-center justify-between px-3 py-2 border-b border-border/60">
-              <span className="text-[10px] uppercase tracking-wide text-muted-foreground">
-                Filter by event type
-              </span>
-              {selected.size > 0 && (
-                <button
-                  type="button"
-                  onClick={clearEventTypes}
-                  className="text-[10px] text-muted-foreground hover:text-foreground/90"
-                >
-                  Clear all
-                </button>
-              )}
-            </div>
-            <div className="max-h-72 overflow-y-auto">
-              {eventTypes.isLoading ? (
-                <p className="text-xs text-muted-foreground px-3 py-4">
-                  Loading…
-                </p>
-              ) : (
-                eventTypes.data?.map((et) => (
-                  <label
-                    key={et.name}
-                    className="flex items-center gap-2.5 px-3 py-1.5 hover:bg-muted cursor-pointer"
-                  >
-                    <input
-                      type="checkbox"
-                      className="accent-primary"
-                      checked={selected.has(et.name)}
-                      onChange={() => toggleEventType(et.name)}
-                    />
-                    <span className="font-mono text-[11px] text-foreground/90">
-                      {et.name}
-                    </span>
-                  </label>
-                ))
-              )}
-            </div>
-            {selected.size > 0 && (
-              <div className="px-3 py-2 border-t border-border/60 flex flex-wrap gap-1">
-                {Array.from(selected).map((name) => (
-                  <Badge
-                    key={name}
-                    variant="secondary"
-                    className="text-[10px] cursor-pointer"
-                    onClick={() => toggleEventType(name)}
-                  >
-                    {name} ×
-                  </Badge>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-      </div>
     </div>
   );
 }

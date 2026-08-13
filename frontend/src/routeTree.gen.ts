@@ -33,6 +33,8 @@ import { Route as AuthenticatedWebhooksEndpointIdRouteImport } from './routes/_a
 import { Route as UsersUserIdPairRouteImport } from './routes/users/$userId/pair'
 import { Route as AuthenticatedUsersUserIdIndexRouteImport } from './routes/_authenticated/users/$userId/index'
 import { Route as AuthenticatedUsersUserIdTabRouteImport } from './routes/_authenticated/users/$userId/$tab'
+import { Route as AuthenticatedWebhooksEndpointIdIndexRouteImport } from './routes/_authenticated/webhooks/$endpointId/index'
+import { Route as AuthenticatedWebhooksEndpointIdTabRouteImport } from './routes/_authenticated/webhooks/$endpointId/$tab'
 import { Route as UsersUserIdPairIndexRouteImport } from './routes/users/$userId/pair.index'
 import { Route as UsersUserIdPairErrorRouteImport } from './routes/users/$userId/pair.error'
 import { Route as UsersUserIdPairSuccessRouteImport } from './routes/users/$userId/pair.success'
@@ -163,6 +165,18 @@ const AuthenticatedUsersUserIdTabRoute =
     path: '/$tab',
     getParentRoute: () => AuthenticatedUsersUserIdRoute,
   } as any)
+const AuthenticatedWebhooksEndpointIdIndexRoute =
+  AuthenticatedWebhooksEndpointIdIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthenticatedWebhooksEndpointIdRoute,
+  } as any)
+const AuthenticatedWebhooksEndpointIdTabRoute =
+  AuthenticatedWebhooksEndpointIdTabRouteImport.update({
+    id: '/$tab',
+    path: '/$tab',
+    getParentRoute: () => AuthenticatedWebhooksEndpointIdRoute,
+  } as any)
 const UsersUserIdPairIndexRoute = UsersUserIdPairIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -195,16 +209,18 @@ export interface FileRoutesByFullPath {
   '/widget/connect': typeof WidgetConnectRoute
   '/settings/$tab': typeof AuthenticatedSettingsTabRoute
   '/users/$userId': typeof AuthenticatedUsersUserIdRouteWithChildren
-  '/webhooks/$endpointId': typeof AuthenticatedWebhooksEndpointIdRoute
+  '/webhooks/$endpointId': typeof AuthenticatedWebhooksEndpointIdRouteWithChildren
   '/users/$userId/pair': typeof UsersUserIdPairRouteWithChildren
   '/settings/': typeof AuthenticatedSettingsIndexRoute
   '/syncs/': typeof AuthenticatedSyncsIndexRoute
   '/users/': typeof AuthenticatedUsersIndexRoute
   '/webhooks/': typeof AuthenticatedWebhooksIndexRoute
   '/users/$userId/$tab': typeof AuthenticatedUsersUserIdTabRoute
+  '/webhooks/$endpointId/$tab': typeof AuthenticatedWebhooksEndpointIdTabRoute
   '/users/$userId/pair/error': typeof UsersUserIdPairErrorRoute
   '/users/$userId/pair/success': typeof UsersUserIdPairSuccessRoute
   '/users/$userId/': typeof AuthenticatedUsersUserIdIndexRoute
+  '/webhooks/$endpointId/': typeof AuthenticatedWebhooksEndpointIdIndexRoute
   '/users/$userId/pair/': typeof UsersUserIdPairIndexRoute
 }
 export interface FileRoutesByTo {
@@ -218,15 +234,16 @@ export interface FileRoutesByTo {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/widget/connect': typeof WidgetConnectRoute
   '/settings/$tab': typeof AuthenticatedSettingsTabRoute
-  '/webhooks/$endpointId': typeof AuthenticatedWebhooksEndpointIdRoute
   '/settings': typeof AuthenticatedSettingsIndexRoute
   '/syncs': typeof AuthenticatedSyncsIndexRoute
   '/users': typeof AuthenticatedUsersIndexRoute
   '/webhooks': typeof AuthenticatedWebhooksIndexRoute
   '/users/$userId/$tab': typeof AuthenticatedUsersUserIdTabRoute
+  '/webhooks/$endpointId/$tab': typeof AuthenticatedWebhooksEndpointIdTabRoute
   '/users/$userId/pair/error': typeof UsersUserIdPairErrorRoute
   '/users/$userId/pair/success': typeof UsersUserIdPairSuccessRoute
   '/users/$userId': typeof AuthenticatedUsersUserIdIndexRoute
+  '/webhooks/$endpointId': typeof AuthenticatedWebhooksEndpointIdIndexRoute
   '/users/$userId/pair': typeof UsersUserIdPairIndexRoute
 }
 export interface FileRoutesById {
@@ -247,16 +264,18 @@ export interface FileRoutesById {
   '/widget/connect': typeof WidgetConnectRoute
   '/_authenticated/settings/$tab': typeof AuthenticatedSettingsTabRoute
   '/_authenticated/users/$userId': typeof AuthenticatedUsersUserIdRouteWithChildren
-  '/_authenticated/webhooks/$endpointId': typeof AuthenticatedWebhooksEndpointIdRoute
+  '/_authenticated/webhooks/$endpointId': typeof AuthenticatedWebhooksEndpointIdRouteWithChildren
   '/users/$userId/pair': typeof UsersUserIdPairRouteWithChildren
   '/_authenticated/settings/': typeof AuthenticatedSettingsIndexRoute
   '/_authenticated/syncs/': typeof AuthenticatedSyncsIndexRoute
   '/_authenticated/users/': typeof AuthenticatedUsersIndexRoute
   '/_authenticated/webhooks/': typeof AuthenticatedWebhooksIndexRoute
   '/_authenticated/users/$userId/$tab': typeof AuthenticatedUsersUserIdTabRoute
+  '/_authenticated/webhooks/$endpointId/$tab': typeof AuthenticatedWebhooksEndpointIdTabRoute
   '/users/$userId/pair/error': typeof UsersUserIdPairErrorRoute
   '/users/$userId/pair/success': typeof UsersUserIdPairSuccessRoute
   '/_authenticated/users/$userId/': typeof AuthenticatedUsersUserIdIndexRoute
+  '/_authenticated/webhooks/$endpointId/': typeof AuthenticatedWebhooksEndpointIdIndexRoute
   '/users/$userId/pair/': typeof UsersUserIdPairIndexRoute
 }
 export interface FileRouteTypes {
@@ -284,9 +303,11 @@ export interface FileRouteTypes {
     | '/users/'
     | '/webhooks/'
     | '/users/$userId/$tab'
+    | '/webhooks/$endpointId/$tab'
     | '/users/$userId/pair/error'
     | '/users/$userId/pair/success'
     | '/users/$userId/'
+    | '/webhooks/$endpointId/'
     | '/users/$userId/pair/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -300,15 +321,16 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/widget/connect'
     | '/settings/$tab'
-    | '/webhooks/$endpointId'
     | '/settings'
     | '/syncs'
     | '/users'
     | '/webhooks'
     | '/users/$userId/$tab'
+    | '/webhooks/$endpointId/$tab'
     | '/users/$userId/pair/error'
     | '/users/$userId/pair/success'
     | '/users/$userId'
+    | '/webhooks/$endpointId'
     | '/users/$userId/pair'
   id:
     | '__root__'
@@ -335,9 +357,11 @@ export interface FileRouteTypes {
     | '/_authenticated/users/'
     | '/_authenticated/webhooks/'
     | '/_authenticated/users/$userId/$tab'
+    | '/_authenticated/webhooks/$endpointId/$tab'
     | '/users/$userId/pair/error'
     | '/users/$userId/pair/success'
     | '/_authenticated/users/$userId/'
+    | '/_authenticated/webhooks/$endpointId/'
     | '/users/$userId/pair/'
   fileRoutesById: FileRoutesById
 }
@@ -523,6 +547,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedUsersUserIdTabRouteImport
       parentRoute: typeof AuthenticatedUsersUserIdRoute
     }
+    '/_authenticated/webhooks/$endpointId/': {
+      id: '/_authenticated/webhooks/$endpointId/'
+      path: '/'
+      fullPath: '/webhooks/$endpointId/'
+      preLoaderRoute: typeof AuthenticatedWebhooksEndpointIdIndexRouteImport
+      parentRoute: typeof AuthenticatedWebhooksEndpointIdRoute
+    }
+    '/_authenticated/webhooks/$endpointId/$tab': {
+      id: '/_authenticated/webhooks/$endpointId/$tab'
+      path: '/$tab'
+      fullPath: '/webhooks/$endpointId/$tab'
+      preLoaderRoute: typeof AuthenticatedWebhooksEndpointIdTabRouteImport
+      parentRoute: typeof AuthenticatedWebhooksEndpointIdRoute
+    }
     '/users/$userId/pair/': {
       id: '/users/$userId/pair/'
       path: '/'
@@ -602,13 +640,32 @@ const AuthenticatedUsersRouteChildren: AuthenticatedUsersRouteChildren = {
 const AuthenticatedUsersRouteWithChildren =
   AuthenticatedUsersRoute._addFileChildren(AuthenticatedUsersRouteChildren)
 
+interface AuthenticatedWebhooksEndpointIdRouteChildren {
+  AuthenticatedWebhooksEndpointIdTabRoute: typeof AuthenticatedWebhooksEndpointIdTabRoute
+  AuthenticatedWebhooksEndpointIdIndexRoute: typeof AuthenticatedWebhooksEndpointIdIndexRoute
+}
+
+const AuthenticatedWebhooksEndpointIdRouteChildren: AuthenticatedWebhooksEndpointIdRouteChildren =
+  {
+    AuthenticatedWebhooksEndpointIdTabRoute:
+      AuthenticatedWebhooksEndpointIdTabRoute,
+    AuthenticatedWebhooksEndpointIdIndexRoute:
+      AuthenticatedWebhooksEndpointIdIndexRoute,
+  }
+
+const AuthenticatedWebhooksEndpointIdRouteWithChildren =
+  AuthenticatedWebhooksEndpointIdRoute._addFileChildren(
+    AuthenticatedWebhooksEndpointIdRouteChildren,
+  )
+
 interface AuthenticatedWebhooksRouteChildren {
-  AuthenticatedWebhooksEndpointIdRoute: typeof AuthenticatedWebhooksEndpointIdRoute
+  AuthenticatedWebhooksEndpointIdRoute: typeof AuthenticatedWebhooksEndpointIdRouteWithChildren
   AuthenticatedWebhooksIndexRoute: typeof AuthenticatedWebhooksIndexRoute
 }
 
 const AuthenticatedWebhooksRouteChildren: AuthenticatedWebhooksRouteChildren = {
-  AuthenticatedWebhooksEndpointIdRoute: AuthenticatedWebhooksEndpointIdRoute,
+  AuthenticatedWebhooksEndpointIdRoute:
+    AuthenticatedWebhooksEndpointIdRouteWithChildren,
   AuthenticatedWebhooksIndexRoute: AuthenticatedWebhooksIndexRoute,
 }
 
