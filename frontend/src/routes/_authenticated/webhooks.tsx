@@ -1,5 +1,6 @@
 import { createFileRoute, Outlet } from '@tanstack/react-router';
 import { FlaskConical } from 'lucide-react';
+import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 
 export const Route = createFileRoute('/_authenticated/webhooks')({
   component: WebhooksLayout,
@@ -9,15 +10,14 @@ function WebhooksLayout() {
   return (
     <>
       <div className="px-8 pt-8">
-        <div className="flex items-start gap-3 rounded-lg border border-warning-muted/20 bg-warning-muted/10 px-4 py-2.5 text-warning-muted">
-          <FlaskConical className="h-4 w-4 shrink-0 mt-0.5 text-warning-muted" />
-          <p className="text-xs font-medium leading-relaxed">
-            <span className="font-semibold text-warning-muted">Beta</span>
-            {' - '}
+        <Alert variant="warning">
+          <FlaskConical className="h-4 w-4" />
+          <AlertTitle>Beta</AlertTitle>
+          <AlertDescription className="text-muted-foreground">
             Webhooks are in beta. The API and delivery behavior may change, and
             we don't recommend relying on them for production workloads yet.
-          </p>
-        </div>
+          </AlertDescription>
+        </Alert>
       </div>
       <Outlet />
     </>

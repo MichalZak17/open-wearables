@@ -313,7 +313,7 @@ function DeliveriesFilters({
           className="flex items-center gap-1.5 bg-card border border-border text-foreground/90 text-xs rounded-md px-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-ring hover:border-border-hover"
         >
           {selected.size > 0 ? (
-            <span className="text-indigo-400">
+            <span className="text-foreground">
               {selected.size} event type{selected.size > 1 ? 's' : ''}
             </span>
           ) : (
@@ -351,7 +351,7 @@ function DeliveriesFilters({
                   >
                     <input
                       type="checkbox"
-                      className="accent-indigo-500"
+                      className="accent-primary"
                       checked={selected.has(et.name)}
                       onChange={() => toggleEventType(et.name)}
                     />
@@ -367,7 +367,8 @@ function DeliveriesFilters({
                 {Array.from(selected).map((name) => (
                   <Badge
                     key={name}
-                    className="bg-indigo-500/15 text-indigo-300 border border-indigo-500/30 text-[10px] cursor-pointer"
+                    variant="secondary"
+                    className="text-[10px] cursor-pointer"
                     onClick={() => toggleEventType(name)}
                   >
                     {name} ×

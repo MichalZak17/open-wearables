@@ -1,9 +1,15 @@
 import { createFileRoute } from '@tanstack/react-router';
 import { useMemo, useState } from 'react';
-import { Plus, Webhook as WebhookIcon, ExternalLink } from 'lucide-react';
+import {
+  Plus,
+  Webhook as WebhookIcon,
+  ExternalLink,
+  TriangleAlert,
+} from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { PageHeader } from '@/components/ui/page-header';
+import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { WebhooksTable } from '@/components/webhooks/webhooks-table';
 import { WebhookCreateDialog } from '@/components/webhooks/webhook-create-dialog';
 import { WebhookDeleteDialog } from '@/components/webhooks/webhook-delete-dialog';
@@ -57,24 +63,25 @@ function WebhooksPage() {
           <Button onClick={() => config.refetch()}>Retry</Button>
         </div>
       ) : !webhooksEnabled ? (
-        <div className="rounded-2xl border border-warning-muted/40 bg-warning-muted/8 p-6">
-          <p className="text-sm font-medium text-warning-muted">
-            Webhooks are not enabled on this instance.
-          </p>
-          <p className="text-xs text-muted-foreground mt-1">
-            Set <code>OUTGOING_WEBHOOKS_ENABLED=true</code> in the backend
-            environment to enable outgoing webhook delivery. See the{' '}
-            <a
-              href="https://openwearables.io/docs/api-reference/guides/webhooks"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-primary underline underline-offset-2"
-            >
-              webhooks guide
-            </a>{' '}
-            for self-hosting setup.
-          </p>
-        </div>
+        <Alert variant="warning">
+          <TriangleAlert className="h-4 w-4" />
+          <AlertTitle>Webhooks are not enabled on this instance.</AlertTitle>
+          <AlertDescription className="text-muted-foreground">
+            <p>
+              Set <code>OUTGOING_WEBHOOKS_ENABLED=true</code> in the backend
+              environment to enable outgoing webhook delivery. See the{' '}
+              <a
+                href="https://openwearables.io/docs/api-reference/guides/webhooks"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-primary underline underline-offset-2"
+              >
+                webhooks guide
+              </a>{' '}
+              for self-hosting setup.
+            </p>
+          </AlertDescription>
+        </Alert>
       ) : endpoints.isLoading ? (
         <div className="rounded-2xl border border-border/60 bg-gradient-to-br from-card/80 to-card/40 p-6 backdrop-blur-xl animate-pulse space-y-3">
           {[1, 2, 3].map((i) => (
