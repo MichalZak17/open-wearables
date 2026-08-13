@@ -43,12 +43,13 @@ function DashboardPage() {
         description="Your platform overview and key metrics"
       />
 
+      <StatsGrid stats={stats} />
+
       <Card
         role="region"
-        aria-label="Platform overview"
+        aria-label="Connection coverage"
         className="overflow-hidden rounded-xl"
       >
-        <StatsGrid stats={stats} />
         <DataMetricsSection
           connectionsCoverage={stats.connections_coverage}
           totalUsers={stats.total_users.count}

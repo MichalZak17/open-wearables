@@ -9,6 +9,15 @@ import { useOAuthProviders } from '@/hooks/api/use-oauth-providers';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import { CursorPagination } from '@/components/common/cursor-pagination';
 import { cn } from '@/lib/utils';
 import {
   SOURCE_LABELS,
@@ -189,60 +198,35 @@ function SyncsPage() {
       ) : (
         <>
           <div className="overflow-hidden rounded-lg border border-border">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-border bg-muted/50 text-xs text-muted-foreground">
-                  <th className="px-4 py-2.5 text-left font-medium">User ID</th>
-                  <th className="px-4 py-2.5 text-left font-medium">
-                    Provider
-                  </th>
-                  <th className="px-4 py-2.5 text-left font-medium">Source</th>
-                  <th className="px-4 py-2.5 text-left font-medium">Status</th>
-                  <th className="px-4 py-2.5 text-left font-medium">
-                    Duration
-                  </th>
-                  <th className="px-4 py-2.5 text-left font-medium">
-                    Items / Message
-                  </th>
-                  <th className="px-4 py-2.5 text-left font-medium">
-                    Last Update
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border/50">
+            <Table>
+              <TableHeader>
+                <TableRow className="bg-muted/50 hover:bg-muted/50">
+                  <TableHead>User ID</TableHead>
+                  <TableHead>Provider</TableHead>
+                  <TableHead>Source</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Duration</TableHead>
+                  <TableHead>Items / Message</TableHead>
+                  <TableHead>Last Update</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
                 {paginatedRuns.map((run) => (
                   <SyncRow key={run.run_id} run={run} />
                 ))}
-              </tbody>
-            </table>
+              </TableBody>
+            </Table>
           </div>
 
-          {/* Pagination */}
-          <div className="flex items-center justify-between mt-4">
-            <p className="text-xs text-muted-foreground">
-              Showing {page * pageSize + 1}–
-              {page * pageSize + paginatedRuns.length}
-              {hasMore ? '+' : ''}
-            </p>
-            <div className="flex gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                disabled={page === 0}
-                onClick={() => setPage((p) => p - 1)}
-              >
-                Previous
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                disabled={!hasMore}
-                onClick={() => setPage((p) => p + 1)}
-              >
-                Next
-              </Button>
-            </div>
-          </div>
+          <CursorPagination
+            currentPage={page + 1}
+            hasPrevPage={page > 0}
+            hasNextPage={hasMore}
+            isFetching={isFetching}
+            onPrevPage={() => setPage((p) => p - 1)}
+            onNextPage={() => setPage((p) => p + 1)}
+            itemLabel="runs"
+          />
         </>
       )}
     </div>
@@ -256,33 +240,33 @@ function SyncRow({ run }: { run: SyncRunSummary }) {
   const shortUserId = run.user_id.slice(0, 8);
 
   return (
-    <tr className="transition-colors hover:bg-muted/40">
-      <td className="px-4 py-2.5">
+    <TableRow>
+      <TableCell>
         <Link
           to={ROUTES.user}
           params={{ userId: run.user_id }}
-          className="font-mono text-xs text-blue-400 hover:text-blue-300 hover:underline"
+          className="font-mono text-xs text-primary hover:underline"
         >
           {shortUserId}
           {run.user_id.length > 8 ? '…' : ''}
         </Link>
-      </td>
-      <td className="px-4 py-2.5 capitalize">{run.provider}</td>
-      <td className="px-4 py-2.5 text-muted-foreground">
+      </TableCell>
+      <TableCell className="capitalize">{run.provider}</TableCell>
+      <TableCell className="text-muted-foreground">
         <span className="inline-flex items-center gap-1.5">
           {sourceLabel}
           {run.source === 'linked_account' && run.primary_user_id && (
             <Link
               to={ROUTES.user}
               params={{ userId: run.primary_user_id }}
-              className="font-mono text-xs text-blue-400 hover:text-blue-300 hover:underline"
+              className="font-mono text-xs text-primary hover:underline"
             >
               {run.primary_user_id.slice(0, 8)}…
             </Link>
           )}
         </span>
-      </td>
-      <td className="px-4 py-2.5">
+      </TableCell>
+      <TableCell>
         <span
           className={cn(
             'rounded-full px-2 py-0.5 text-xs font-medium capitalize',
@@ -291,11 +275,11 @@ function SyncRow({ run }: { run: SyncRunSummary }) {
         >
           {run.status.replace('_', ' ')}
         </span>
-      </td>
-      <td className="px-4 py-2.5 tabular-nums text-muted-foreground">
+      </TableCell>
+      <TableCell className="tabular-nums text-muted-foreground">
         {formatRunDuration(run.started_at, run.ended_at)}
-      </td>
-      <td className="max-w-xs px-4 py-2.5 text-muted-foreground">
+      </TableCell>
+      <TableCell className="max-w-xs text-muted-foreground">
         {run.items_processed !== null && (
           <div className="tabular-nums">
             {`${run.items_processed}${run.items_total !== null ? ` / ${run.items_total} items` : ' items'}`}
@@ -308,11 +292,11 @@ function SyncRow({ run }: { run: SyncRunSummary }) {
         ) : (
           run.items_processed === null && '—'
         )}
-      </td>
-      <td className="px-4 py-2.5 text-muted-foreground">
+      </TableCell>
+      <TableCell className="text-muted-foreground">
         {formatRelative(run.last_update)}
-      </td>
-    </tr>
+      </TableCell>
+    </TableRow>
   );
 }
 

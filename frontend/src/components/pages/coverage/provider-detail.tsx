@@ -8,7 +8,7 @@ function Stat({ label, value }: { label: string; value: number }) {
         className={
           value === 0
             ? 'text-lg font-semibold tabular-nums text-muted-foreground/60'
-            : 'text-lg font-semibold tabular-nums text-emerald-400'
+            : 'text-lg font-semibold tabular-nums text-success'
         }
       >
         {value}

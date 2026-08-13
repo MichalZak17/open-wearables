@@ -30,7 +30,7 @@ function StatBar({ label, value, max }: Stat) {
       </div>
       <div className="h-1 overflow-hidden rounded-full bg-muted">
         <div
-          className="h-full rounded-full bg-emerald-500/70 transition-all duration-500"
+          className="h-full rounded-full bg-success/70 transition-all duration-500"
           style={{ width: `${pct}%` }}
         />
       </div>

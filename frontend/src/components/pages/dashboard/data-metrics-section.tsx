@@ -21,12 +21,7 @@ export function DataMetricsSection({
   const percentage = Math.min(Math.max(Math.round(rawPercentage), 0), 100);
 
   return (
-    <div
-      className={cn(
-        'border-t border-border px-4 py-5 sm:px-6 sm:py-6',
-        className
-      )}
-    >
+    <div className={cn('px-4 py-5 sm:px-6 sm:py-6', className)}>
       <div className="flex items-end justify-between gap-4">
         <div>
           <h2 className="text-sm font-semibold text-foreground">

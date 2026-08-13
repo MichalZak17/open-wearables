@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import { createFileRoute } from '@tanstack/react-router';
-import { Info } from 'lucide-react';
+import { Info, TriangleAlert } from 'lucide-react';
 import { useCoverage } from '@/hooks/api/use-coverage';
 import { PageHeader } from '@/components/ui/page-header';
+import { Card } from '@/components/ui/card';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { CoverageMatrix } from '@/components/pages/coverage/coverage-matrix';
 import { ProviderDetail } from '@/components/pages/coverage/provider-detail';
 import { SourceBadge } from '@/components/common/source-badge';
@@ -31,68 +33,87 @@ function CoveragePage() {
   const [selected, setSelected] = useState<string | null>(null);
 
   return (
-    <div className="relative min-h-full p-6 md:p-8">
-      <div className="relative space-y-8 max-w-7xl">
-        <PageHeader
-          title="Data Coverage"
-          description="What each provider is capable of delivering, by API layer."
-        />
+    <div className="p-6 md:p-8 space-y-6">
+      <PageHeader
+        title="Data Coverage"
+        description="What each provider is capable of delivering, by API layer."
+      />
 
-        <div className="flex items-start gap-2.5 rounded-lg border border-border bg-muted/40 px-4 py-3 text-sm text-muted-foreground">
-          <Info className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
-          <p>
-            This matrix shows provider{' '}
-            <span className="text-foreground">capabilities</span> — the data
-            types Open Wearables can ingest from each provider. A green dot
-            means the type is supported and normalized in code; it does{' '}
-            <span className="text-foreground">not</span> reflect what has
-            actually been synced for your users in this instance.
-          </p>
-        </div>
+      <Alert className="bg-muted/40">
+        <Info className="h-4 w-4" />
+        <AlertDescription className="text-muted-foreground">
+          This matrix shows provider{' '}
+          <span className="text-foreground">capabilities</span> — the data types
+          Open Wearables can ingest from each provider. A green dot means the
+          type is supported and normalized in code; it does{' '}
+          <span className="text-foreground">not</span> reflect what has actually
+          been synced for your users in this instance.
+        </AlertDescription>
+      </Alert>
 
-        {isLoading && <LoadingSkeleton />}
+      {isLoading && <LoadingSkeleton />}
 
-        {error && (
-          <div className="rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
-            Failed to load coverage data.
-          </div>
-        )}
+      {error && (
+        <Alert variant="destructive">
+          <TriangleAlert className="h-4 w-4" />
+          <AlertDescription>Failed to load coverage data.</AlertDescription>
+        </Alert>
+      )}
 
-        {data && (
-          <div className="space-y-6">
-            <div className="space-y-3">
-              <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-                Inspect a provider
-              </p>
-              <div className="flex flex-wrap gap-2.5">
-                {data.providers.map((p) => {
-                  const active = selected === p;
-                  return (
-                    <button
-                      key={p}
-                      type="button"
-                      aria-pressed={active}
-                      onClick={() => setSelected(active ? null : p)}
-                      className={cn(
-                        'rounded-md transition-opacity duration-150',
-                        active ? 'opacity-100' : 'opacity-40 hover:opacity-80'
-                      )}
-                    >
-                      <SourceBadge provider={p} />
-                    </button>
-                  );
-                })}
-              </div>
+      {data && (
+        <div className="space-y-6">
+          <div className="space-y-3">
+            <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+              View
+            </p>
+            <div className="flex flex-wrap items-center gap-2.5">
+              <button
+                type="button"
+                aria-pressed={selected === null}
+                onClick={() => setSelected(null)}
+                className={cn(
+                  'rounded-full border px-3 py-1 text-xs font-medium transition-colors',
+                  selected === null
+                    ? 'border-border bg-muted text-foreground'
+                    : 'border-border/60 text-muted-foreground hover:text-foreground/90'
+                )}
+              >
+                Compare all
+              </button>
+              {data.providers.map((p) => {
+                const active = selected === p;
+                return (
+                  <button
+                    key={p}
+                    type="button"
+                    aria-pressed={active}
+                    onClick={() => setSelected(active ? null : p)}
+                    title={`Inspect ${p}`}
+                    className={cn(
+                      'rounded-full transition-all',
+                      active
+                        ? 'opacity-100 ring-2 ring-ring ring-offset-2 ring-offset-background'
+                        : selected
+                          ? 'opacity-40 hover:opacity-80'
+                          : 'opacity-100 hover:opacity-80'
+                    )}
+                  >
+                    <SourceBadge provider={p} />
+                  </button>
+                );
+              })}
             </div>
+          </div>
 
-            {selected && <ProviderDetail data={data} provider={selected} />}
-
-            <div className="rounded-xl border border-border bg-card/50 p-4">
+          {selected ? (
+            <ProviderDetail data={data} provider={selected} />
+          ) : (
+            <Card className="p-4">
               <CoverageMatrix data={data} />
-            </div>
-          </div>
-        )}
-      </div>
+            </Card>
+          )}
+        </div>
+      )}
     </div>
   );
 }
