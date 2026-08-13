@@ -1,6 +1,6 @@
 /**
  * Shared formatting helpers and label maps for sync status display.
- * Used by connection-card.tsx and the Syncs admin page.
+ * Used by the profile connection card and the Syncs admin page.
  */
 
 export const STAGE_LABELS: Record<string, string> = {

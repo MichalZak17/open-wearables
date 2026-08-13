@@ -44,11 +44,11 @@ export function CursorPagination({
   // cursor's own has-next signal so the label can never contradict the buttons:
   // on the last page we know the exact total; otherwise show at least one more.
   const estimatedPages =
-    totalItems != null && pageSize
+    totalItems !== undefined && pageSize
       ? Math.max(1, Math.ceil(totalItems / pageSize))
       : null;
   const totalPages =
-    estimatedPages == null
+    estimatedPages === null
       ? null
       : hasNextPage
         ? Math.max(estimatedPages, currentPage + 1)
@@ -58,14 +58,14 @@ export function CursorPagination({
     <div className="flex flex-col gap-3 border-t border-border pt-4 sm:flex-row sm:items-center sm:justify-between">
       <p className="text-sm text-muted-foreground tabular-nums">
         Page <span className="font-medium text-foreground/90">{currentPage}</span>
-        {totalPages != null && (
+        {totalPages !== null && (
           <>
             {' '}
             of{' '}
             <span className="font-medium text-foreground/90">{totalPages}</span>
           </>
         )}
-        {totalItems != null && (
+        {totalItems !== undefined && (
           <>
             {' · '}
             <span className="font-medium text-foreground/90">{totalItems}</span>{' '}

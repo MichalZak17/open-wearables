@@ -86,7 +86,7 @@
     --border-hover: 220 13% 30%;
     --border-glow: 220 10% 45%;
     --input: 222 18% 10%;
-    --ring: 233 90% 77%; /* indigo focus ring */
+    --ring: 220 14% 72%; /* graphite focus ring (neutral, no brand accent) */
 
     /* === SIDEBAR (recedes below the cards it frames) === */
     --sidebar: 224 19% 7%;
@@ -96,7 +96,7 @@
     --sidebar-accent: 220 14% 16%; /* hover + active surface */
     --sidebar-accent-foreground: 220 15% 98%;
     --sidebar-border: 222 15% 18%;
-    --sidebar-ring: 233 90% 77%;
+    --sidebar-ring: 220 14% 72%;
 
     /* === CHART COLORS === */
     --chart-1: 234 89% 74%; /* Indigo 400 */
@@ -178,7 +178,7 @@
     --border-hover: 0 0% 78%;
     --border-glow: 220 12% 55%;
     --input: 0 0% 100%;
-    --ring: 233 74% 56%; /* indigo focus ring */
+    --ring: 220 12% 45%; /* graphite focus ring (neutral, no brand accent) */
 
     /* The sidebar is a true-white navigation surface, separated by one line. */
     --sidebar: 0 0% 100%;
@@ -188,7 +188,7 @@
     --sidebar-accent: 0 0% 96%;
     --sidebar-accent-foreground: 220 25% 12%;
     --sidebar-border: 0 0% 89%;
-    --sidebar-ring: 233 74% 56%;
+    --sidebar-ring: 220 12% 45%;
 
     --chart-1: 239 84% 67%; /* Indigo 500 */
     --chart-2: 173 80% 40%; /* Teal 500 */

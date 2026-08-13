@@ -61,7 +61,7 @@ function withoutTransitions(swap: () => void): void {
 
   // Force a reflow so the transition-less styles are flushed before we remove
   // the override on the next tick.
-  window.getComputedStyle(document.body).transition;
+  void window.getComputedStyle(document.body).transition;
   window.setTimeout(() => {
     document.head.removeChild(style);
   }, 0);

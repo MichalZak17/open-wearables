@@ -5,8 +5,6 @@ import { isAuthenticated } from '@/lib/auth/session';
 import { ArrowRight, Mail, Lock, Loader2 } from 'lucide-react';
 import { LogoMark } from '@/components/common/logo-mark';
 import { AuthShell } from '@/components/auth/auth-shell';
-import { AuthDivider } from '@/components/auth/auth-divider';
-import { SsoButton } from '@/components/auth/sso-button';
 import { CodePreviewCard } from '@/components/login/code-preview-card';
 import { DEFAULT_REDIRECTS, ROUTES } from '@/lib/constants/routes';
 import { getCopyrightText } from '@/lib/constants/app';
@@ -130,10 +128,6 @@ function LoginPage() {
                 )}
               </Button>
             </form>
-
-            <AuthDivider>Or</AuthDivider>
-
-            <SsoButton />
 
             <p className="text-center text-sm text-muted-foreground">
               Don't have an account?{' '}

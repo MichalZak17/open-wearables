@@ -11,8 +11,6 @@ import {
 import { ArrowRight, Mail, ShieldCheck, Zap, Bot, Loader2 } from 'lucide-react';
 import { LogoMark } from '@/components/common/logo-mark';
 import { AuthShell } from '@/components/auth/auth-shell';
-import { AuthDivider } from '@/components/auth/auth-divider';
-import { SsoButton } from '@/components/auth/sso-button';
 import { PasswordInput } from '@/components/auth/password-input';
 import { DEFAULT_REDIRECTS, ROUTES } from '@/lib/constants/routes';
 import { Button } from '@/components/ui/button';
@@ -170,10 +168,6 @@ function RegisterPage() {
                 )}
               </Button>
             </form>
-
-            <AuthDivider>Or</AuthDivider>
-
-            <SsoButton />
 
             <p className="text-center text-sm text-muted-foreground">
               Already have an account?{' '}
