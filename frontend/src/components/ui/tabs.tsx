@@ -75,8 +75,11 @@ interface TabsTriggerProps {
 }
 
 export function TabsTrigger({ value, children, className }: TabsTriggerProps) {
-  const { value: activeValue, onValueChange, variant } =
-    useTabsContext('TabsTrigger');
+  const {
+    value: activeValue,
+    onValueChange,
+    variant,
+  } = useTabsContext('TabsTrigger');
   const isActive = activeValue === value;
 
   const base =

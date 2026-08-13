@@ -44,7 +44,8 @@ export function DateRangeSelector({
 
   const emitCustom = (nextFrom: string, nextTo: string) => {
     // Guard against an inverted range (from after to).
-    const [lo, hi] = nextFrom <= nextTo ? [nextFrom, nextTo] : [nextTo, nextFrom];
+    const [lo, hi] =
+      nextFrom <= nextTo ? [nextFrom, nextTo] : [nextTo, nextFrom];
     onChange({ type: 'custom', from: lo, to: hi });
   };
 
@@ -62,7 +63,9 @@ export function DateRangeSelector({
     'focus:outline-none [color-scheme:light] dark:[color-scheme:dark]';
 
   return (
-    <div className={cn('flex flex-wrap items-center justify-end gap-2', className)}>
+    <div
+      className={cn('flex flex-wrap items-center justify-end gap-2', className)}
+    >
       {isCustom && (
         <div className="inline-flex h-8 items-center overflow-hidden rounded-lg bg-foreground/5 transition-shadow focus-within:ring-1 focus-within:ring-primary/50">
           <input
@@ -100,7 +103,9 @@ export function DateRangeSelector({
             key={days}
             type="button"
             onClick={() => onChange({ type: 'preset', days })}
-            className={pillClass(value.type === 'preset' && value.days === days)}
+            className={pillClass(
+              value.type === 'preset' && value.days === days
+            )}
           >
             {days}d
           </button>

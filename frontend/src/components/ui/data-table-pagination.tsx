@@ -107,8 +107,7 @@ export function DataTablePagination({
           <span className="font-medium text-foreground/90">
             {from}&ndash;{to}
           </span>{' '}
-          of{' '}
-          <span className="font-medium text-foreground/90">{total}</span>{' '}
+          of <span className="font-medium text-foreground/90">{total}</span>{' '}
           {itemLabel}
         </p>
       </div>

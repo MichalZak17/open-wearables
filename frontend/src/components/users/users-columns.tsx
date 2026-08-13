@@ -35,7 +35,9 @@ function SortableHeader({
   children: ReactNode;
 }) {
   if (!(column.id in columnToSortBy)) {
-    return <span className="font-medium text-muted-foreground">{children}</span>;
+    return (
+      <span className="font-medium text-muted-foreground">{children}</span>
+    );
   }
 
   return (
@@ -157,7 +159,9 @@ export function createUsersColumns({
         return (
           <span
             className={
-              fullName ? 'text-sm text-foreground/90' : 'text-muted-foreground/70'
+              fullName
+                ? 'text-sm text-foreground/90'
+                : 'text-muted-foreground/70'
             }
           >
             {fullName || '—'}

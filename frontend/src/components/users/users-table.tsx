@@ -10,7 +10,10 @@ import { Card } from '@/components/ui/card';
 import { DataTable } from '@/components/ui/data-table';
 import { DataTablePagination } from '@/components/ui/data-table-pagination';
 import { Input } from '@/components/ui/input';
-import { columnToSortBy, createUsersColumns } from '@/components/users/users-columns';
+import {
+  columnToSortBy,
+  createUsersColumns,
+} from '@/components/users/users-columns';
 
 interface UsersTableProps {
   data: UserRead[];

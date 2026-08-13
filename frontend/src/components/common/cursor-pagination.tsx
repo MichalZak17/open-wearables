@@ -57,7 +57,8 @@ export function CursorPagination({
   return (
     <div className="flex flex-col gap-3 border-t border-border pt-4 sm:flex-row sm:items-center sm:justify-between">
       <p className="text-sm text-muted-foreground tabular-nums">
-        Page <span className="font-medium text-foreground/90">{currentPage}</span>
+        Page{' '}
+        <span className="font-medium text-foreground/90">{currentPage}</span>
         {totalPages !== null && (
           <>
             {' '}
@@ -68,7 +69,9 @@ export function CursorPagination({
         {totalItems !== undefined && (
           <>
             {' · '}
-            <span className="font-medium text-foreground/90">{totalItems}</span>{' '}
+            <span className="font-medium text-foreground/90">
+              {totalItems}
+            </span>{' '}
             {itemLabel}
           </>
         )}

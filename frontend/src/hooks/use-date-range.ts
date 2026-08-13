@@ -70,7 +70,10 @@ export function usePeriodRange(period: PeriodValue): ResolvedPeriod {
     const endIso = `${endDay}T00:00:00.000Z`;
     const start = new Date(startIso);
     const end = new Date(endIso);
-    const days = Math.max(1, Math.round((end.getTime() - start.getTime()) / DAY_MS));
+    const days = Math.max(
+      1,
+      Math.round((end.getTime() - start.getTime()) / DAY_MS)
+    );
     return { startDate: start, endDate: end, startIso, endIso, days };
   }, [period]);
 }

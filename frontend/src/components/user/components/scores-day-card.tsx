@@ -128,7 +128,9 @@ function ScoreDayCardComponent({ date, scores }: ScoreDayCardProps) {
           </h4>
           <div className="space-y-4">
             {scores
-              .filter((s) => s.components && Object.keys(s.components).length > 0)
+              .filter(
+                (s) => s.components && Object.keys(s.components).length > 0
+              )
               .map((score) => (
                 <div key={score.id}>
                   <div className="flex items-center gap-2 mb-2">
