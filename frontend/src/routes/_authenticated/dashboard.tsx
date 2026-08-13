@@ -23,6 +23,11 @@ function DashboardPage() {
     sort_order: 'desc',
     limit: 5,
   });
+  const { data: recentlyAddedUsers, isLoading: isLoadingRecent } = useUsers({
+    sort_by: 'created_at',
+    sort_order: 'desc',
+    limit: 5,
+  });
 
   if (isLoading) {
     return <DashboardLoadingState />;
@@ -32,9 +37,10 @@ function DashboardPage() {
     return <DashboardErrorState onRetry={refetch} />;
   }
 
-  const recentUsers = (lastSyncedUsers?.items ?? []).filter(
+  const syncedUsers = (lastSyncedUsers?.items ?? []).filter(
     (user) => user.last_synced_at
   );
+  const recentUsers = recentlyAddedUsers?.items ?? [];
 
   return (
     <div className="space-y-6 p-6 md:p-8">
@@ -73,7 +79,9 @@ function DashboardPage() {
         >
           <RecentUsersSection
             users={recentUsers}
-            isLoading={isLoadingLastSynced}
+            lastSyncedUsers={syncedUsers}
+            isLoading={isLoadingRecent}
+            isLoadingLastSynced={isLoadingLastSynced}
           />
         </Card>
       </div>
