@@ -1,5 +1,11 @@
-import { createFileRoute, Link, useNavigate } from '@tanstack/react-router';
-import { useState, useRef, useMemo, type ReactNode } from 'react';
+import {
+  createFileRoute,
+  Link,
+  Outlet,
+  useLocation,
+  useNavigate,
+} from '@tanstack/react-router';
+import { useState, useRef, useMemo } from 'react';
 import {
   ArrowLeft,
   Link as LinkIcon,
@@ -29,14 +35,8 @@ import { useUserDataSummary } from '@/hooks/api/use-health';
 import { ROUTES } from '@/lib/constants/routes';
 import { API_CONFIG } from '@/lib/api/config';
 import { copyToClipboard } from '@/lib/utils/clipboard';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { ProfileSection } from '@/components/user/profile';
-import { SleepSection } from '@/components/user/sleep';
-import { ActivitySection } from '@/components/user/activity';
-import { BodySection } from '@/components/user/body';
-import { WorkoutSection } from '@/components/user/workouts';
-import { ScoresSection } from '@/components/user/scores';
-import { WomensHealthSection } from '@/components/user/womens-health';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { UserDetailProvider } from './-user-detail-context';
 import {
   DateRangeSelector,
   presetPeriod,
@@ -84,7 +84,6 @@ interface TabConfig {
   id: string;
   label: string;
   icon: LucideIcon;
-  content: ReactNode;
 }
 
 // Tabs whose content is scoped by the shared date range, and therefore show the
@@ -101,11 +100,9 @@ const DATE_RANGE_TABS = new Set([
 function UserDetailPage() {
   const { userId } = Route.useParams();
   const navigate = useNavigate();
+  const { pathname } = useLocation();
   const { data: user, isLoading: userLoading } = useUser(userId);
   const { data: dataSummary } = useUserDataSummary(userId);
-
-  // Tab state
-  const [activeTab, setActiveTab] = useState('profile');
 
   // One date range shared by every data tab. The selector lives in the tab bar
   // (see below) and is hidden on tabs that don't consume a historical range.
@@ -127,60 +124,24 @@ function UserDetailPage() {
 
   const isUploading = isUploadingFile(userId);
 
-  // Tab configuration
+  // Tab configuration (content lives in the child routes; see ./$userId/$tab).
   const tabs: TabConfig[] = useMemo(
     () => [
-      {
-        id: 'profile',
-        label: 'Profile',
-        icon: User,
-        content: <ProfileSection userId={userId} />,
-      },
-      {
-        id: 'workouts',
-        label: 'Workouts',
-        icon: Dumbbell,
-        content: <WorkoutSection userId={userId} dateRange={dateRange} />,
-      },
-      {
-        id: 'activity',
-        label: 'Activity',
-        icon: Activity,
-        content: <ActivitySection userId={userId} dateRange={dateRange} />,
-      },
-      {
-        id: 'sleep',
-        label: 'Sleep',
-        icon: Moon,
-        content: <SleepSection userId={userId} dateRange={dateRange} />,
-      },
-      {
-        id: 'body',
-        label: 'Body',
-        icon: Scale,
-        content: <BodySection userId={userId} />,
-      },
-      {
-        id: 'scores',
-        label: 'Scores',
-        icon: Trophy,
-        content: <ScoresSection userId={userId} dateRange={dateRange} />,
-      },
+      { id: 'profile', label: 'Profile', icon: User },
+      { id: 'workouts', label: 'Workouts', icon: Dumbbell },
+      { id: 'activity', label: 'Activity', icon: Activity },
+      { id: 'sleep', label: 'Sleep', icon: Moon },
+      { id: 'body', label: 'Body', icon: Scale },
+      { id: 'scores', label: 'Scores', icon: Trophy },
       ...(dataSummary?.has_womens_health_data
-        ? [
-            {
-              id: 'womens-health',
-              label: "Women's Health",
-              icon: Heart,
-              content: (
-                <WomensHealthSection userId={userId} dateRange={dateRange} />
-              ),
-            },
-          ]
+        ? [{ id: 'womens-health', label: "Women's Health", icon: Heart }]
         : []),
     ],
-    [userId, dateRange, dataSummary?.has_womens_health_data]
+    [dataSummary?.has_womens_health_data]
   );
+
+  const segment = pathname.split('/').pop() ?? '';
+  const activeTab = tabs.find((t) => t.id === segment)?.id ?? 'profile';
 
   const handleCopyPairLink = async () => {
     const pairLink = `${window.location.origin}/users/${userId}/pair`;
@@ -380,7 +341,13 @@ function UserDetailPage() {
       </div>
 
       {/* Tabs */}
-      <Tabs value={activeTab} onValueChange={setActiveTab} variant="underline">
+      <Tabs
+        value={activeTab}
+        onValueChange={(tab) =>
+          navigate({ to: '/users/$userId/$tab', params: { userId, tab } })
+        }
+        variant="underline"
+      >
         <div className="flex items-center justify-between gap-4 border-b border-border">
           <TabsList className="border-b-0">
             {tabs.map((tab) => (
@@ -398,12 +365,13 @@ function UserDetailPage() {
             />
           )}
         </div>
-        {tabs.map((tab) => (
-          <TabsContent key={tab.id} value={tab.id} className="space-y-6">
-            {tab.content}
-          </TabsContent>
-        ))}
       </Tabs>
+
+      <UserDetailProvider value={{ userId, dateRange }}>
+        <div className="space-y-6">
+          <Outlet />
+        </div>
+      </UserDetailProvider>
 
       {/* Invitation Code Dialog */}
       <Dialog open={isCodeDialogOpen} onOpenChange={setIsCodeDialogOpen}>

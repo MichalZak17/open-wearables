@@ -23,12 +23,16 @@ import { Route as AuthenticatedSyncsRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedUsersRouteImport } from './routes/_authenticated/users'
 import { Route as AuthenticatedWebhooksRouteImport } from './routes/_authenticated/webhooks'
 import { Route as WidgetConnectRouteImport } from './routes/widget.connect'
+import { Route as AuthenticatedSettingsIndexRouteImport } from './routes/_authenticated/settings/index'
+import { Route as AuthenticatedSettingsTabRouteImport } from './routes/_authenticated/settings/$tab'
 import { Route as AuthenticatedSyncsIndexRouteImport } from './routes/_authenticated/syncs/index'
 import { Route as AuthenticatedUsersIndexRouteImport } from './routes/_authenticated/users/index'
 import { Route as AuthenticatedUsersUserIdRouteImport } from './routes/_authenticated/users/$userId'
 import { Route as AuthenticatedWebhooksIndexRouteImport } from './routes/_authenticated/webhooks/index'
 import { Route as AuthenticatedWebhooksEndpointIdRouteImport } from './routes/_authenticated/webhooks/$endpointId'
 import { Route as UsersUserIdPairRouteImport } from './routes/users/$userId/pair'
+import { Route as AuthenticatedUsersUserIdIndexRouteImport } from './routes/_authenticated/users/$userId/index'
+import { Route as AuthenticatedUsersUserIdTabRouteImport } from './routes/_authenticated/users/$userId/$tab'
 import { Route as UsersUserIdPairIndexRouteImport } from './routes/users/$userId/pair.index'
 import { Route as UsersUserIdPairErrorRouteImport } from './routes/users/$userId/pair.error'
 import { Route as UsersUserIdPairSuccessRouteImport } from './routes/users/$userId/pair.success'
@@ -102,6 +106,18 @@ const WidgetConnectRoute = WidgetConnectRouteImport.update({
   path: '/widget/connect',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedSettingsIndexRoute =
+  AuthenticatedSettingsIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthenticatedSettingsRoute,
+  } as any)
+const AuthenticatedSettingsTabRoute =
+  AuthenticatedSettingsTabRouteImport.update({
+    id: '/$tab',
+    path: '/$tab',
+    getParentRoute: () => AuthenticatedSettingsRoute,
+  } as any)
 const AuthenticatedSyncsIndexRoute = AuthenticatedSyncsIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -135,6 +151,18 @@ const UsersUserIdPairRoute = UsersUserIdPairRouteImport.update({
   path: '/users/$userId/pair',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedUsersUserIdIndexRoute =
+  AuthenticatedUsersUserIdIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthenticatedUsersUserIdRoute,
+  } as any)
+const AuthenticatedUsersUserIdTabRoute =
+  AuthenticatedUsersUserIdTabRouteImport.update({
+    id: '/$tab',
+    path: '/$tab',
+    getParentRoute: () => AuthenticatedUsersUserIdRoute,
+  } as any)
 const UsersUserIdPairIndexRoute = UsersUserIdPairIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -160,19 +188,23 @@ export interface FileRoutesByFullPath {
   '/reset-password': typeof ResetPasswordRoute
   '/coverage': typeof AuthenticatedCoverageRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
-  '/settings': typeof AuthenticatedSettingsRoute
+  '/settings': typeof AuthenticatedSettingsRouteWithChildren
   '/syncs': typeof AuthenticatedSyncsRouteWithChildren
   '/users': typeof AuthenticatedUsersRouteWithChildren
   '/webhooks': typeof AuthenticatedWebhooksRouteWithChildren
   '/widget/connect': typeof WidgetConnectRoute
-  '/users/$userId': typeof AuthenticatedUsersUserIdRoute
+  '/settings/$tab': typeof AuthenticatedSettingsTabRoute
+  '/users/$userId': typeof AuthenticatedUsersUserIdRouteWithChildren
   '/webhooks/$endpointId': typeof AuthenticatedWebhooksEndpointIdRoute
   '/users/$userId/pair': typeof UsersUserIdPairRouteWithChildren
+  '/settings/': typeof AuthenticatedSettingsIndexRoute
   '/syncs/': typeof AuthenticatedSyncsIndexRoute
   '/users/': typeof AuthenticatedUsersIndexRoute
   '/webhooks/': typeof AuthenticatedWebhooksIndexRoute
+  '/users/$userId/$tab': typeof AuthenticatedUsersUserIdTabRoute
   '/users/$userId/pair/error': typeof UsersUserIdPairErrorRoute
   '/users/$userId/pair/success': typeof UsersUserIdPairSuccessRoute
+  '/users/$userId/': typeof AuthenticatedUsersUserIdIndexRoute
   '/users/$userId/pair/': typeof UsersUserIdPairIndexRoute
 }
 export interface FileRoutesByTo {
@@ -184,15 +216,17 @@ export interface FileRoutesByTo {
   '/reset-password': typeof ResetPasswordRoute
   '/coverage': typeof AuthenticatedCoverageRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
-  '/settings': typeof AuthenticatedSettingsRoute
   '/widget/connect': typeof WidgetConnectRoute
-  '/users/$userId': typeof AuthenticatedUsersUserIdRoute
+  '/settings/$tab': typeof AuthenticatedSettingsTabRoute
   '/webhooks/$endpointId': typeof AuthenticatedWebhooksEndpointIdRoute
+  '/settings': typeof AuthenticatedSettingsIndexRoute
   '/syncs': typeof AuthenticatedSyncsIndexRoute
   '/users': typeof AuthenticatedUsersIndexRoute
   '/webhooks': typeof AuthenticatedWebhooksIndexRoute
+  '/users/$userId/$tab': typeof AuthenticatedUsersUserIdTabRoute
   '/users/$userId/pair/error': typeof UsersUserIdPairErrorRoute
   '/users/$userId/pair/success': typeof UsersUserIdPairSuccessRoute
+  '/users/$userId': typeof AuthenticatedUsersUserIdIndexRoute
   '/users/$userId/pair': typeof UsersUserIdPairIndexRoute
 }
 export interface FileRoutesById {
@@ -206,19 +240,23 @@ export interface FileRoutesById {
   '/reset-password': typeof ResetPasswordRoute
   '/_authenticated/coverage': typeof AuthenticatedCoverageRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
-  '/_authenticated/settings': typeof AuthenticatedSettingsRoute
+  '/_authenticated/settings': typeof AuthenticatedSettingsRouteWithChildren
   '/_authenticated/syncs': typeof AuthenticatedSyncsRouteWithChildren
   '/_authenticated/users': typeof AuthenticatedUsersRouteWithChildren
   '/_authenticated/webhooks': typeof AuthenticatedWebhooksRouteWithChildren
   '/widget/connect': typeof WidgetConnectRoute
-  '/_authenticated/users/$userId': typeof AuthenticatedUsersUserIdRoute
+  '/_authenticated/settings/$tab': typeof AuthenticatedSettingsTabRoute
+  '/_authenticated/users/$userId': typeof AuthenticatedUsersUserIdRouteWithChildren
   '/_authenticated/webhooks/$endpointId': typeof AuthenticatedWebhooksEndpointIdRoute
   '/users/$userId/pair': typeof UsersUserIdPairRouteWithChildren
+  '/_authenticated/settings/': typeof AuthenticatedSettingsIndexRoute
   '/_authenticated/syncs/': typeof AuthenticatedSyncsIndexRoute
   '/_authenticated/users/': typeof AuthenticatedUsersIndexRoute
   '/_authenticated/webhooks/': typeof AuthenticatedWebhooksIndexRoute
+  '/_authenticated/users/$userId/$tab': typeof AuthenticatedUsersUserIdTabRoute
   '/users/$userId/pair/error': typeof UsersUserIdPairErrorRoute
   '/users/$userId/pair/success': typeof UsersUserIdPairSuccessRoute
+  '/_authenticated/users/$userId/': typeof AuthenticatedUsersUserIdIndexRoute
   '/users/$userId/pair/': typeof UsersUserIdPairIndexRoute
 }
 export interface FileRouteTypes {
@@ -237,14 +275,18 @@ export interface FileRouteTypes {
     | '/users'
     | '/webhooks'
     | '/widget/connect'
+    | '/settings/$tab'
     | '/users/$userId'
     | '/webhooks/$endpointId'
     | '/users/$userId/pair'
+    | '/settings/'
     | '/syncs/'
     | '/users/'
     | '/webhooks/'
+    | '/users/$userId/$tab'
     | '/users/$userId/pair/error'
     | '/users/$userId/pair/success'
+    | '/users/$userId/'
     | '/users/$userId/pair/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -256,15 +298,17 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/coverage'
     | '/dashboard'
-    | '/settings'
     | '/widget/connect'
-    | '/users/$userId'
+    | '/settings/$tab'
     | '/webhooks/$endpointId'
+    | '/settings'
     | '/syncs'
     | '/users'
     | '/webhooks'
+    | '/users/$userId/$tab'
     | '/users/$userId/pair/error'
     | '/users/$userId/pair/success'
+    | '/users/$userId'
     | '/users/$userId/pair'
   id:
     | '__root__'
@@ -282,14 +326,18 @@ export interface FileRouteTypes {
     | '/_authenticated/users'
     | '/_authenticated/webhooks'
     | '/widget/connect'
+    | '/_authenticated/settings/$tab'
     | '/_authenticated/users/$userId'
     | '/_authenticated/webhooks/$endpointId'
     | '/users/$userId/pair'
+    | '/_authenticated/settings/'
     | '/_authenticated/syncs/'
     | '/_authenticated/users/'
     | '/_authenticated/webhooks/'
+    | '/_authenticated/users/$userId/$tab'
     | '/users/$userId/pair/error'
     | '/users/$userId/pair/success'
+    | '/_authenticated/users/$userId/'
     | '/users/$userId/pair/'
   fileRoutesById: FileRoutesById
 }
@@ -405,6 +453,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WidgetConnectRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/settings/': {
+      id: '/_authenticated/settings/'
+      path: '/'
+      fullPath: '/settings/'
+      preLoaderRoute: typeof AuthenticatedSettingsIndexRouteImport
+      parentRoute: typeof AuthenticatedSettingsRoute
+    }
+    '/_authenticated/settings/$tab': {
+      id: '/_authenticated/settings/$tab'
+      path: '/$tab'
+      fullPath: '/settings/$tab'
+      preLoaderRoute: typeof AuthenticatedSettingsTabRouteImport
+      parentRoute: typeof AuthenticatedSettingsRoute
+    }
     '/_authenticated/syncs/': {
       id: '/_authenticated/syncs/'
       path: '/'
@@ -447,6 +509,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof UsersUserIdPairRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/users/$userId/': {
+      id: '/_authenticated/users/$userId/'
+      path: '/'
+      fullPath: '/users/$userId/'
+      preLoaderRoute: typeof AuthenticatedUsersUserIdIndexRouteImport
+      parentRoute: typeof AuthenticatedUsersUserIdRoute
+    }
+    '/_authenticated/users/$userId/$tab': {
+      id: '/_authenticated/users/$userId/$tab'
+      path: '/$tab'
+      fullPath: '/users/$userId/$tab'
+      preLoaderRoute: typeof AuthenticatedUsersUserIdTabRouteImport
+      parentRoute: typeof AuthenticatedUsersUserIdRoute
+    }
     '/users/$userId/pair/': {
       id: '/users/$userId/pair/'
       path: '/'
@@ -471,6 +547,21 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AuthenticatedSettingsRouteChildren {
+  AuthenticatedSettingsTabRoute: typeof AuthenticatedSettingsTabRoute
+  AuthenticatedSettingsIndexRoute: typeof AuthenticatedSettingsIndexRoute
+}
+
+const AuthenticatedSettingsRouteChildren: AuthenticatedSettingsRouteChildren = {
+  AuthenticatedSettingsTabRoute: AuthenticatedSettingsTabRoute,
+  AuthenticatedSettingsIndexRoute: AuthenticatedSettingsIndexRoute,
+}
+
+const AuthenticatedSettingsRouteWithChildren =
+  AuthenticatedSettingsRoute._addFileChildren(
+    AuthenticatedSettingsRouteChildren,
+  )
+
 interface AuthenticatedSyncsRouteChildren {
   AuthenticatedSyncsIndexRoute: typeof AuthenticatedSyncsIndexRoute
 }
@@ -482,13 +573,29 @@ const AuthenticatedSyncsRouteChildren: AuthenticatedSyncsRouteChildren = {
 const AuthenticatedSyncsRouteWithChildren =
   AuthenticatedSyncsRoute._addFileChildren(AuthenticatedSyncsRouteChildren)
 
+interface AuthenticatedUsersUserIdRouteChildren {
+  AuthenticatedUsersUserIdTabRoute: typeof AuthenticatedUsersUserIdTabRoute
+  AuthenticatedUsersUserIdIndexRoute: typeof AuthenticatedUsersUserIdIndexRoute
+}
+
+const AuthenticatedUsersUserIdRouteChildren: AuthenticatedUsersUserIdRouteChildren =
+  {
+    AuthenticatedUsersUserIdTabRoute: AuthenticatedUsersUserIdTabRoute,
+    AuthenticatedUsersUserIdIndexRoute: AuthenticatedUsersUserIdIndexRoute,
+  }
+
+const AuthenticatedUsersUserIdRouteWithChildren =
+  AuthenticatedUsersUserIdRoute._addFileChildren(
+    AuthenticatedUsersUserIdRouteChildren,
+  )
+
 interface AuthenticatedUsersRouteChildren {
-  AuthenticatedUsersUserIdRoute: typeof AuthenticatedUsersUserIdRoute
+  AuthenticatedUsersUserIdRoute: typeof AuthenticatedUsersUserIdRouteWithChildren
   AuthenticatedUsersIndexRoute: typeof AuthenticatedUsersIndexRoute
 }
 
 const AuthenticatedUsersRouteChildren: AuthenticatedUsersRouteChildren = {
-  AuthenticatedUsersUserIdRoute: AuthenticatedUsersUserIdRoute,
+  AuthenticatedUsersUserIdRoute: AuthenticatedUsersUserIdRouteWithChildren,
   AuthenticatedUsersIndexRoute: AuthenticatedUsersIndexRoute,
 }
 
@@ -513,7 +620,7 @@ const AuthenticatedWebhooksRouteWithChildren =
 interface AuthenticatedRouteChildren {
   AuthenticatedCoverageRoute: typeof AuthenticatedCoverageRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
-  AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
+  AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRouteWithChildren
   AuthenticatedSyncsRoute: typeof AuthenticatedSyncsRouteWithChildren
   AuthenticatedUsersRoute: typeof AuthenticatedUsersRouteWithChildren
   AuthenticatedWebhooksRoute: typeof AuthenticatedWebhooksRouteWithChildren
@@ -522,7 +629,7 @@ interface AuthenticatedRouteChildren {
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedCoverageRoute: AuthenticatedCoverageRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
-  AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
+  AuthenticatedSettingsRoute: AuthenticatedSettingsRouteWithChildren,
   AuthenticatedSyncsRoute: AuthenticatedSyncsRouteWithChildren,
   AuthenticatedUsersRoute: AuthenticatedUsersRouteWithChildren,
   AuthenticatedWebhooksRoute: AuthenticatedWebhooksRouteWithChildren,
