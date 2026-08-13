@@ -25,7 +25,11 @@ import { CursorPagination } from '@/components/common/cursor-pagination';
 import { DataSourceInfo } from '@/components/common/data-source-info';
 import { SectionHeader } from '@/components/common/section-header';
 import { Switch } from '@/components/ui/switch';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 import {
   ChartContainer,
   ChartTooltip,
@@ -77,7 +81,10 @@ const STAGE_KEYS = ['deep', 'rem', 'light', 'awake'] as const;
 // Chart config drives the per-stage CSS colors (--color-deep …) and tooltip
 // labels for the stacked duration view.
 const STAGE_CHART_CONFIG = {
-  deep: { label: SLEEP_STAGE_LABELS.deep, color: SLEEP_STAGE_CHART_COLORS.deep },
+  deep: {
+    label: SLEEP_STAGE_LABELS.deep,
+    color: SLEEP_STAGE_CHART_COLORS.deep,
+  },
   rem: { label: SLEEP_STAGE_LABELS.rem, color: SLEEP_STAGE_CHART_COLORS.rem },
   light: {
     label: SLEEP_STAGE_LABELS.light,
@@ -158,7 +165,9 @@ function SleepStagesBar({
 
   if (stageData.length === 0) {
     return (
-      <div className={cn('h-2 overflow-hidden rounded-full bg-muted', className)}>
+      <div
+        className={cn('h-2 overflow-hidden rounded-full bg-muted', className)}
+      >
         <div className="h-full w-full bg-muted-foreground/25" />
       </div>
     );

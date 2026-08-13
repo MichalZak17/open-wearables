@@ -323,10 +323,7 @@ function ActivityDayRow({ summary }: { summary: ActivitySummary }) {
   );
 }
 
-export function ActivitySection({
-  userId,
-  dateRange,
-}: ActivitySectionProps) {
+export function ActivitySection({ userId, dateRange }: ActivitySectionProps) {
   // Cursor-based pagination for activity days
   const pagination = useCursorPagination();
 

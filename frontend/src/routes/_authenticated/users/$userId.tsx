@@ -30,13 +30,13 @@ import { ROUTES } from '@/lib/constants/routes';
 import { API_CONFIG } from '@/lib/api/config';
 import { copyToClipboard } from '@/lib/utils/clipboard';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { ProfileSection } from '@/components/user/profile-section';
-import { SleepSection } from '@/components/user/sleep-section';
-import { ActivitySection } from '@/components/user/activity-section';
-import { BodySection } from '@/components/user/body-section';
-import { WorkoutSection } from '@/components/user/workout-section';
-import { ScoresSection } from '@/components/user/scores-section';
-import { WomensHealthSection } from '@/components/user/womens-health-section';
+import { ProfileSection } from '@/components/user/profile';
+import { SleepSection } from '@/components/user/sleep';
+import { ActivitySection } from '@/components/user/activity';
+import { BodySection } from '@/components/user/body';
+import { WorkoutSection } from '@/components/user/workouts';
+import { ScoresSection } from '@/components/user/scores';
+import { WomensHealthSection } from '@/components/user/womens-health';
 import {
   DateRangeSelector,
   presetPeriod,

@@ -265,10 +265,7 @@ function WorkoutSectionSkeleton() {
 
 const PAGE_SIZE = 10;
 
-export function WorkoutSection({
-  userId,
-  dateRange,
-}: WorkoutSectionProps) {
+export function WorkoutSection({ userId, dateRange }: WorkoutSectionProps) {
   // Cursor-based pagination for workouts
   const pagination = useCursorPagination();
 

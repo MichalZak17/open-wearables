@@ -417,10 +417,7 @@ interface ScoresSectionProps {
   dateRange: PeriodValue;
 }
 
-export function ScoresSection({
-  userId,
-  dateRange,
-}: ScoresSectionProps) {
+export function ScoresSection({ userId, dateRange }: ScoresSectionProps) {
   const { startIso, endIso } = usePeriodRange(dateRange);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
 
